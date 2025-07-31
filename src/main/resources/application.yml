@@ -1,0 +1,35 @@
+
+# Spring Boot Configuration
+spring:
+  application:
+    name: nukkadseva-backend
+
+
+  # Database Configuration
+  datasource:
+    url: jdbc:postgresql://localhost:5432/nukkadseva
+    username: "postgres"
+    password: "yusuf@123"
+
+  # JPA Configuration
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: none
+    properties:
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  # Liquibase Configuration
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.json
+    default-schema: public
+    contexts: dev
+    # Set to true to drop all database objects before running migrations (use with caution in production!)
+    drop-first: false
+    # Set to true to clear all checksums in the current log (useful for development)
+    clear-checksums: false
+
+  # Server Configuration
+  server:
+    port: 8080
