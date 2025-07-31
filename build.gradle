@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.4'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.liquibase.gradle' version '2.2.0'
 }
 
 group = 'com.nukkadseva'
@@ -23,11 +24,24 @@ repositories {
     mavenCentral()
 }
 
+configurations {
+    liquibaseRuntime.extendsFrom runtimeClasspath, implementation
+}
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.liquibase:liquibase-core'
+    implementation 'org.liquibase:liquibase-core:4.20.0'
+    
+    // Liquibase runtime dependencies
+    liquibaseRuntime 'org.liquibase:liquibase-core:4.20.0'
+    liquibaseRuntime 'org.liquibase:liquibase-groovy-dsl:3.0.3'
+    liquibaseRuntime 'info.picocli:picocli:4.6.3'
+    liquibaseRuntime 'org.postgresql:postgresql'
+    liquibaseRuntime 'org.springframework.boot:spring-boot-starter-jdbc'
+    liquibaseRuntime sourceSets.main.output
+    
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'org.postgresql:postgresql'
     annotationProcessor 'org.projectlombok:lombok'
@@ -38,3 +52,6 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+// Apply external Liquibase configuration
+apply from: 'gradle/liquibase.gradle'

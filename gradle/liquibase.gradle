@@ -1,0 +1,25 @@
+// Liquibase Configuration
+liquibase {
+    activities {
+        main {
+            // Database connection properties
+            driver 'org.postgresql.Driver'
+            url 'jdbc:postgresql://localhost:5432/nukkadseva'
+            username 'postgres'
+            password 'yusuf@123'
+            
+            // Changelog file location (relative to src/main/resources)
+            changelogFile 'db/changelog/db.changelog-master.json'
+            
+            // Reference URL for Hibernate integration
+            referenceUrl 'hibernate:spring:com.nukkadseva.nukkadsevabackend.entity' +
+                    '?dialect=org.hibernate.dialect.PostgreSQLDialect' +
+                    '&hibernate.physical_naming_strategy=org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy' +
+                    '&hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy'
+            
+            // Classpath configuration
+            classpath sourceSets.main.runtimeClasspath
+        }
+    }
+    runList = 'main'
+}

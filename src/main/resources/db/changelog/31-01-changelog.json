@@ -1,0 +1,363 @@
+{
+  "databaseChangeLog": [
+    {
+      "changeSet": {
+        "id": "1753972731023-1",
+        "author": "YusufJamal",
+        "objectQuotingStrategy": "QUOTE_ONLY_RESERVED_WORDS",
+        "changes": [
+          {
+            "createTable": {
+              "columns": [
+                {
+                  "column": {
+                    "autoIncrement": true,
+                    "constraints": {
+                      "nullable": false,
+                      "primaryKey": true,
+                      "primaryKeyName": "pk_address"
+                    },
+                    "name": "address_id",
+                    "type": "BIGINT"
+                  }
+                },
+                {
+                  "column": {
+                    "constraints": {
+                      "nullable": false
+                    },
+                    "name": "full_address",
+                    "type": "VARCHAR(1000)"
+                  }
+                },
+                {
+                  "column": {
+                    "constraints": {
+                      "nullable": false
+                    },
+                    "name": "state",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "constraints": {
+                      "nullable": false
+                    },
+                    "name": "city",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "constraints": {
+                      "nullable": false
+                    },
+                    "name": "pin_code",
+                    "type": "VARCHAR(255)"
+                  }
+                }
+              ],
+              "tableName": "address"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "changeSet": {
+        "id": "1753972731023-2",
+        "author": "YusufJamal",
+        "objectQuotingStrategy": "QUOTE_ONLY_RESERVED_WORDS",
+        "changes": [
+          {
+            "createTable": {
+              "columns": [
+                {
+                  "column": {
+                    "autoIncrement": true,
+                    "constraints": {
+                      "nullable": false,
+                      "primaryKey": true,
+                      "primaryKeyName": "pk_service_providers"
+                    },
+                    "name": "id",
+                    "type": "BIGINT"
+                  }
+                },
+                {
+                  "column": {
+                    "constraints": {
+                      "nullable": false
+                    },
+                    "name": "full_name",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "constraints": {
+                      "nullable": false
+                    },
+                    "name": "dob",
+                    "type": "DATE"
+                  }
+                },
+                {
+                  "column": {
+                    "constraints": {
+                      "nullable": false
+                    },
+                    "name": "mobile_number",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "email",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "photograph",
+                    "type": "bytea"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "business_name",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "constraints": {
+                      "nullable": false
+                    },
+                    "name": "service_category",
+                    "type": "text[]"
+                  }
+                },
+                {
+                  "column": {
+                    "constraints": {
+                      "nullable": false
+                    },
+                    "name": "service_area",
+                    "type": "text[]"
+                  }
+                },
+                {
+                  "column": {
+                    "constraints": {
+                      "nullable": false
+                    },
+                    "name": "experience",
+                    "type": "INT"
+                  }
+                },
+                {
+                  "column": {
+                    "constraints": {
+                      "nullable": false
+                    },
+                    "name": "languages",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "constraints": {
+                      "nullable": false
+                    },
+                    "name": "govt_id",
+                    "type": "bytea"
+                  }
+                },
+                {
+                  "column": {
+                    "constraints": {
+                      "nullable": false
+                    },
+                    "name": "govt_id_content_type",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "constraints": {
+                      "nullable": false
+                    },
+                    "name": "selfie",
+                    "type": "bytea"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "gstin",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "qualification",
+                    "type": "bytea"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "qualification_content_type",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "police_verification",
+                    "type": "bytea"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "police_verification_content_type",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "bio",
+                    "type": "VARCHAR(2000)"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "profile_picture",
+                    "type": "bytea"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "profile_picture_content_type",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "constraints": {
+                      "nullable": false
+                    },
+                    "name": "availability",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "constraints": {
+                      "nullable": false
+                    },
+                    "name": "created_at",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "constraints": {
+                      "nullable": false
+                    },
+                    "name": "updated_at",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "photograph_content_type",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "selfie_content_type",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "address_id",
+                    "type": "BIGINT"
+                  }
+                }
+              ],
+              "tableName": "service_providers"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "changeSet": {
+        "id": "1753972731023-3",
+        "author": "YusufJamal",
+        "objectQuotingStrategy": "QUOTE_ONLY_RESERVED_WORDS",
+        "changes": [
+          {
+            "addUniqueConstraint": {
+              "columnNames": "address_id",
+              "constraintName": "uc_service_providers_address",
+              "tableName": "service_providers"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "changeSet": {
+        "id": "1753972731023-4",
+        "author": "YusufJamal",
+        "objectQuotingStrategy": "QUOTE_ONLY_RESERVED_WORDS",
+        "changes": [
+          {
+            "addUniqueConstraint": {
+              "columnNames": "email",
+              "constraintName": "uc_service_providers_email",
+              "tableName": "service_providers"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "changeSet": {
+        "id": "1753972731023-5",
+        "author": "YusufJamal",
+        "objectQuotingStrategy": "QUOTE_ONLY_RESERVED_WORDS",
+        "changes": [
+          {
+            "addUniqueConstraint": {
+              "columnNames": "mobile_number",
+              "constraintName": "uc_service_providers_mobile_number",
+              "tableName": "service_providers"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "changeSet": {
+        "id": "1753972731023-6",
+        "author": "YusufJamal",
+        "objectQuotingStrategy": "QUOTE_ONLY_RESERVED_WORDS",
+        "changes": [
+          {
+            "addForeignKeyConstraint": {
+              "baseColumnNames": "address_id",
+              "baseTableName": "service_providers",
+              "constraintName": "FK_SERVICE_PROVIDERS_ON_ADDRESS",
+              "referencedColumnNames": "address_id",
+              "referencedTableName": "address"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
