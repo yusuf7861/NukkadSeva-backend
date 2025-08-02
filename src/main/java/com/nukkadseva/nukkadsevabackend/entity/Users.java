@@ -1,5 +1,6 @@
 package com.nukkadseva.nukkadsevabackend.entity;
 
+import com.nukkadseva.nukkadsevabackend.entity.enums.Role;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -20,7 +21,7 @@ public class Users {
     private String email;
     @Column(name = "password", nullable = false)
     private String password;
+    @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
-    private String role;
-
+    private Role role;
 }

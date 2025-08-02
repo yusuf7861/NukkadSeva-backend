@@ -14,4 +14,10 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(new ApiError("EMAIL_ALREADY_EXISTS", e.getMessage()));
     }
+
+    @ExceptionHandler(UserAuthenticationException.class)
+    public ResponseEntity<ApiError> handleUserAuthenticationException(UserAuthenticationException e) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ApiError("AUTHENTICATION_FAILED", e.getMessage()));
+    }
 }

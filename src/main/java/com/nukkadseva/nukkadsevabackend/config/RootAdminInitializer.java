@@ -1,6 +1,7 @@
 package com.nukkadseva.nukkadsevabackend.config;
 
 import com.nukkadseva.nukkadsevabackend.entity.Users;
+import com.nukkadseva.nukkadsevabackend.entity.enums.Role;
 import com.nukkadseva.nukkadsevabackend.repository.UserRepository;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -34,7 +35,7 @@ public class RootAdminInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        boolean isRootAdminExists = userRepository.existsByRole("ROOT_ADMIN");
+        boolean isRootAdminExists = userRepository.existsByRole(Role.ROOT_ADMIN);
 
         if (isRootAdminExists) {
             log.info("Root Admin found. Skipping the creating part of Root Admin.");
@@ -45,7 +46,7 @@ public class RootAdminInitializer implements CommandLineRunner {
             Users rootAdmin = new Users();
             rootAdmin.setEmail("yjamal12feb@gmail.com");
             rootAdmin.setPassword(passwordEncoder.encode(password));
-            rootAdmin.setRole("ROOT_ADMIN");
+            rootAdmin.setRole(Role.ROOT_ADMIN);
             sendRootAdminCredentialsEmail(rootAdmin.getEmail(), rootAdmin.getEmail(), password);
 
             userRepository.save(rootAdmin);

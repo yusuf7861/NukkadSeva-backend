@@ -52,3 +52,7 @@ springdoc:
 logging:
   level:
     org.springdoc: DEBUG
+
+jwt:
+  secret:
+    key: bHVra2Fkc2V2YS1zZWNyZXQta2V5LWZvci1qd3QtYXV0aGVudGljYXRpb24tYW5kLWF1dGhvcml6YXRpb24=
