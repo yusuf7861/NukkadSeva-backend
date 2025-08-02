@@ -1,0 +1,59 @@
+{
+  "databaseChangeLog": [
+    {
+      "changeSet": {
+        "id": "1754044967127-1",
+        "author": "YusufJamal",
+        "objectQuotingStrategy": "QUOTE_ONLY_RESERVED_WORDS",
+        "changes": [
+          {
+            "createTable": {
+              "columns": [
+                {
+                  "column": {
+                    "autoIncrement": true,
+                    "constraints": {
+                      "nullable": false,
+                      "primaryKey": true,
+                      "primaryKeyName": "pk_users"
+                    },
+                    "name": "user_id",
+                    "type": "BIGINT"
+                  }
+                },
+                {
+                  "column": {
+                    "constraints": {
+                      "nullable": false
+                    },
+                    "name": "user_email",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "constraints": {
+                      "nullable": false
+                    },
+                    "name": "password",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "constraints": {
+                      "nullable": false
+                    },
+                    "name": "role",
+                    "type": "VARCHAR(255)"
+                  }
+                }
+              ],
+              "tableName": "users"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

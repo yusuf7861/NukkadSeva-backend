@@ -18,6 +18,7 @@ liquibase {
                     '&hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy'
             
             // Classpath configuration
+            classpath "$projectDir"
             classpath sourceSets.main.runtimeClasspath
         }
     }

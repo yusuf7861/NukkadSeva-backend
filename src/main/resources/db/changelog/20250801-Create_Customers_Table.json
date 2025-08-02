@@ -1,0 +1,140 @@
+{
+  "databaseChangeLog": [
+    {
+      "changeSet": {
+        "id": "1753988739570-1",
+        "author": "YusufJamal",
+        "objectQuotingStrategy": "QUOTE_ONLY_RESERVED_WORDS",
+        "changes": [
+          {
+            "createTable": {
+              "columns": [
+                {
+                  "column": {
+                    "autoIncrement": true,
+                    "constraints": {
+                      "nullable": false,
+                      "primaryKey": true,
+                      "primaryKeyName": "pk_customers"
+                    },
+                    "name": "id",
+                    "type": "BIGINT"
+                  }
+                },
+                {
+                  "column": {
+                    "constraints": {
+                      "nullable": false
+                    },
+                    "name": "full_name",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "constraints": {
+                      "nullable": false
+                    },
+                    "name": "mobile_number",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "email",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "photograph",
+                    "type": "bytea"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "photograph_content_type",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "address_id",
+                    "type": "BIGINT"
+                  }
+                }
+              ],
+              "tableName": "customers"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "changeSet": {
+        "id": "1753988739570-2",
+        "author": "YusufJamal",
+        "objectQuotingStrategy": "QUOTE_ONLY_RESERVED_WORDS",
+        "changes": [
+          {
+            "addUniqueConstraint": {
+              "columnNames": "address_id",
+              "constraintName": "uc_customers_address",
+              "tableName": "customers"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "changeSet": {
+        "id": "1753988739570-3",
+        "author": "YusufJamal",
+        "objectQuotingStrategy": "QUOTE_ONLY_RESERVED_WORDS",
+        "changes": [
+          {
+            "addUniqueConstraint": {
+              "columnNames": "email",
+              "constraintName": "uc_customers_email",
+              "tableName": "customers"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "changeSet": {
+        "id": "1753988739570-4",
+        "author": "YusufJamal",
+        "objectQuotingStrategy": "QUOTE_ONLY_RESERVED_WORDS",
+        "changes": [
+          {
+            "addUniqueConstraint": {
+              "columnNames": "mobile_number",
+              "constraintName": "uc_customers_mobile_number",
+              "tableName": "customers"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "changeSet": {
+        "id": "1753988739570-5",
+        "author": "YusufJamal",
+        "objectQuotingStrategy": "QUOTE_ONLY_RESERVED_WORDS",
+        "changes": [
+          {
+            "addForeignKeyConstraint": {
+              "baseColumnNames": "address_id",
+              "baseTableName": "customers",
+              "constraintName": "FK_CUSTOMERS_ON_ADDRESS",
+              "referencedColumnNames": "address_id",
+              "referencedTableName": "address"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

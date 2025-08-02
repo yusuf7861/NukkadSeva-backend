@@ -5,6 +5,18 @@
         "file": "31-01-changelog.json",
         "relativeToChangelogFile": true
       }
+    },
+    {
+      "include": {
+        "file": "20250801-Create_Customers_Table.json",
+        "relativeToChangelogFile": true
+      }
+    },
+    {
+      "include": {
+        "file": "20250801-Create-Users-Table.json",
+        "relativeToChangelogFile": true
+      }
     }
   ]
 }
