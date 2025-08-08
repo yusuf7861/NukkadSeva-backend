@@ -93,7 +93,8 @@ public class UserServiceImpl implements UserService {
             throw new EmailAlreadyExistsException("Email already exists");
         }
 
-        String resetOtp = String.format("%06d", new Random().nextInt(999999));
+        SecureRandom secureRandom = new SecureRandom();
+        String resetOtp = String.format("%06d", secureRandom.nextInt(1_000_000));
         String token = jwtOtpUtil.generateOtpToken(email, resetOtp, 10);
 
         Map<String, Object> model = new HashMap<>();
