@@ -52,3 +52,7 @@ springdoc:
 logging:
   level:
     org.springdoc: DEBUG
+
+jwt:
+  secret:
+    key: ${JWT_SECRET_KEY}

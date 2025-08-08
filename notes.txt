@@ -1,0 +1,1 @@
+gradlew.bat sonar -Dsonar.projectKey=Nukkad-Seva -Dsonar.projectName="Nukkad-Seva" -Dsonar.host.url=http://localhost:9000 -Dsonar.token=sqp_7e42e4e69d99c22da7d843a5aabc713c08e353af

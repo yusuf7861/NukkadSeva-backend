@@ -17,6 +17,12 @@
         "file": "20250801-Create-Users-Table.json",
         "relativeToChangelogFile": true
       }
+    },
+    {
+      "include": {
+        "file": "20250803-Add-Customer-And-Provider-to-Users.json",
+        "relativeToChangelogFile": true
+      }
     }
   ]
 }
