@@ -55,7 +55,7 @@ public class UserController {
     }
 
     @PostMapping("/send-verification-otp")
-    public ResponseEntity<OtpTokenResponse> sendVerificationOtp(String email) throws MessagingException, TemplateException, IOException {
+    public ResponseEntity<OtpTokenResponse> sendVerificationOtp(@RequestParam String email) throws MessagingException, TemplateException, IOException {
         String token = userService.sendVerificationOtp(email);
         return ResponseEntity.ok(new OtpTokenResponse("OTP_SENT", "OTP sent successfully.", token));
     }
