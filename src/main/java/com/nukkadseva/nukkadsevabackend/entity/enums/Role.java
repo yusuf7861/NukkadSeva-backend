@@ -16,21 +16,4 @@ public enum Role {
         return Collections.singletonList(new SimpleGrantedAuthority("ROLE_"+this.name()));
     }
 
-    public static class SimpleGrantedAuthority implements GrantedAuthority {
-        private final String authority;
-
-        public SimpleGrantedAuthority(String authority) {
-            this.authority = authority;
-        }
-
-        @Override
-        public String getAuthority() {
-            return authority;
-        }
-
-        @Override
-        public String toString() {
-            return authority;
-        }
-    }
 }
