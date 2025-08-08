@@ -1,0 +1,95 @@
+{
+  "databaseChangeLog": [
+    {
+      "changeSet": {
+        "id": "1754231347837-1",
+        "author": "YusufJamal",
+        "changes": [
+          {
+            "addColumn": {
+              "columns": [
+                {
+                  "column": {
+                    "name": "customer_id",
+                    "type": "BIGINT"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "service_provider_id",
+                    "type": "BIGINT"
+                  }
+                }
+              ],
+              "tableName": "users"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "changeSet": {
+        "id": "1754231347837-3",
+        "author": "YusufJamal",
+        "changes": [
+          {
+            "addUniqueConstraint": {
+              "columnNames": "id",
+              "constraintName": "uc_users_customer",
+              "tableName": "users"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "changeSet": {
+        "id": "1754231347837-4",
+        "author": "YusufJamal",
+        "changes": [
+          {
+            "addUniqueConstraint": {
+              "columnNames": "service_provider_id",
+              "constraintName": "uc_users_service_provider",
+              "tableName": "users"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "changeSet": {
+        "id": "1754231347837-5",
+        "author": "YusufJamal",
+        "changes": [
+          {
+            "addForeignKeyConstraint": {
+              "baseColumnNames": "id",
+              "baseTableName": "users",
+              "constraintName": "FK_USERS_ON_CUSTOMER",
+              "referencedColumnNames": "customer_id",
+              "referencedTableName": "customers"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "changeSet": {
+        "id": "1754231347837-6",
+        "author": "YusufJamal",
+        "changes": [
+          {
+            "addForeignKeyConstraint": {
+              "baseColumnNames": "service_provider_id",
+              "baseTableName": "users",
+              "constraintName": "FK_USERS_ON_SERVICE_PROVIDER",
+              "referencedColumnNames": "service_provider_id",
+              "referencedTableName": "service_providers"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

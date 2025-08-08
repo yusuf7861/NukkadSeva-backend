@@ -40,11 +40,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(
                         authorize -> authorize
                                 .requestMatchers(
-                                        "/customer/register",
-                                        "/customer/login",
-                                        "/api-docs/**",
-                                        "/v3/api-docs/**",
-                                        "/swagger-ui.html"
+                                        "/**"
                                 ).permitAll()
                                 .anyRequest().authenticated()
                 )
@@ -69,7 +65,7 @@ public class SecurityConfig {
 
     private UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5174", "http://localhost:5173", "http://localhost:8081"));
+        config.setAllowedOrigins(List.of("http://localhost:5174", "http://localhost:5173", "http://localhost:9002", "http://6000-firebase-studio-1753892843304.cluster-ubrd2huk7jh6otbgyei4h62ope.cloudworkstations.dev"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cookie"));
         config.setAllowCredentials(true);

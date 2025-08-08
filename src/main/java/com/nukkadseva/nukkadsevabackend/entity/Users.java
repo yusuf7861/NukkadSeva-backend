@@ -24,4 +24,12 @@ public class Users {
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private Role role;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "customer_id", referencedColumnName = "customer_id")
+    private Customers customers;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "service_provider_id", referencedColumnName = "service_provider_id")
+    private ServiceProviders serviceProviders;
 }

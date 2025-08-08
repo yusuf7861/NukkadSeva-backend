@@ -6,21 +6,39 @@ import com.nukkadseva.nukkadsevabackend.dto.response.AuthResponse;
 import com.nukkadseva.nukkadsevabackend.entity.Users;
 import com.nukkadseva.nukkadsevabackend.entity.enums.Role;
 import com.nukkadseva.nukkadsevabackend.exception.EmailAlreadyExistsException;
+import com.nukkadseva.nukkadsevabackend.exception.InvalidOtpException;
 import com.nukkadseva.nukkadsevabackend.exception.UserAuthenticationException;
 import com.nukkadseva.nukkadsevabackend.jwt.JwtOtpUtil;
 import com.nukkadseva.nukkadsevabackend.jwt.JwtUtil;
 import com.nukkadseva.nukkadsevabackend.repository.UserRepository;
 import com.nukkadseva.nukkadsevabackend.service.userservice.AppUserDetailsService;
 import com.nukkadseva.nukkadsevabackend.service.userservice.UserService;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseCookie;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +50,8 @@ public class UserServiceImpl implements UserService {
     private final AppUserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
     private final JwtOtpUtil jwtOtpUtil;
+    private final JavaMailSender javaMailSender;
+    private final Configuration freemarkerConfig;
 
     @Override
     public void customerRegistration(UserRequest userRequest) {
@@ -66,13 +86,56 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public String sendVerificationOtp(String email) throws MessagingException, IOException, TemplateException {
+        Optional<Users> byEmail = userRepository.findByEmail(email);
+
+        if (byEmail.isPresent()) {
+            throw new EmailAlreadyExistsException("Email already exists");
+        }
+
+        String resetOtp = String.format("%06d", new Random().nextInt(999999));
+        String token = jwtOtpUtil.generateOtpToken(email, resetOtp, 10);
+
+        Map<String, Object> model = new HashMap<>();
+        model.put("email", email);
+        model.put("otp", resetOtp);
+        Template template = null;
+
+        template = freemarkerConfig.getTemplate("user-verification-otp.html");
+
+        StringWriter stringWriter = new StringWriter();
+
+        template.process(model, stringWriter);
+
+        String htmlContent = stringWriter.toString();
+
+        MimeMessage message = javaMailSender.createMimeMessage();
+
+        MimeMessageHelper helper = null;
+
+        helper = new MimeMessageHelper(message, true);
+        helper.setTo(email);
+        helper.setFrom("yjamal710@gmail.com");
+        helper.setSubject("Account Verification OTP - NukkadSeva");
+        helper.setText(htmlContent, true);
+        javaMailSender.send(message);
+
+        return token;
+    }
+
+    @Override
     public boolean verifyOtp(VerifyOtpRequest request) {
         try {
-            Claims claims = jwtOtpUtil.validateTokenAndGetClaims(token);
+            Claims claims = jwtOtpUtil.validateTokenAndGetClaims(request.getToken());
             String otpFromToken = (String) claims.get("otp");
-            return otp.equals(otpFromToken);
-        } catch (Exception e) {
-            return false;
+
+            if (!request.getOtp().equals(otpFromToken)) {
+                throw new InvalidOtpException("OTP does not match");
+            }
+
+            return true;
+        } catch (ExpiredJwtException | MalformedJwtException jwtException) {
+            throw new InvalidOtpException("OTP token is invalid or expired.");
         }
     }
 }

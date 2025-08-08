@@ -15,14 +15,44 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final AppUserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
     private final AppUserDetailsService appUserDetailsService;
+
+    private static final List<String> WHITELISTS_URLs = List.of(
+            "/customer/register",
+            "/customer/login",
+            "/is-authenticated",
+            "/logout",
+            "/verify-otp",
+            "/send-verification-otp",
+            "/contact-us",
+            "/send-reset-otp",
+            "/reset-password",
+            "/logout",
+            "/error"
+    );
+
+    private boolean isPathWhitelisted(String servletPath) {
+        if (WHITELISTS_URLs.contains(servletPath)) {
+            return true;
+        }
+
+        for (String pattern : WHITELISTS_URLs) {
+            if (pattern.endsWith("/**")) {
+                String prefix = pattern.substring(0, pattern.length() - 3);
+                if (servletPath.startsWith(prefix)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
