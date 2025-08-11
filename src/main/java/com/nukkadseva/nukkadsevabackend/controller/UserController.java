@@ -37,9 +37,9 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully.");
     }
 
-    @PostMapping("/customer/login")
-    public ResponseEntity<AuthResponse> customerLogin(@Valid @RequestBody UserRequest userRequest, HttpServletResponse response) {
-        String token = userService.customerLogin(userRequest);
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody UserRequest userRequest, HttpServletResponse response) {
+        String token = userService.login(userRequest);
 
         ResponseCookie cookie = ResponseCookie.from("jwt", token)
                 .httpOnly(true)

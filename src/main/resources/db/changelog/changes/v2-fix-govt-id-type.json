@@ -1,0 +1,21 @@
+{
+  "databaseChangeLog": [
+    {
+      "changeSet": {
+        "id": "2",
+        "author": "liquibase",
+        "changes": [
+          {
+            "comment": "Ensure proper data type for govt_id column"
+          },
+          {
+            "sql": {
+              "sql": "ALTER TABLE IF EXISTS provider ALTER COLUMN govt_id TYPE bytea USING NULL;"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+

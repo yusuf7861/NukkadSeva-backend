@@ -1,0 +1,23 @@
+{
+  "databaseChangeLog": [
+    {
+      "changeSet": {
+        "id": "1",
+        "author": "liquibase",
+        "changes": [
+          {
+            "sql": {
+              "sql": "ALTER TABLE IF EXISTS service_providers ALTER COLUMN created_at TYPE TIMESTAMP WITHOUT TIME ZONE USING created_at::TIMESTAMP WITHOUT TIME ZONE;"
+            }
+          },
+          {
+            "sql": {
+              "sql": "ALTER TABLE IF EXISTS service_providers ALTER COLUMN updated_at TYPE TIMESTAMP WITHOUT TIME ZONE USING updated_at::TIMESTAMP WITHOUT TIME ZONE;"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+

@@ -1,0 +1,53 @@
+{
+  "databaseChangeLog": [
+    {
+      "changeSet": {
+        "id": "add-provider-timestamps",
+        "author": "system",
+        "changes": [
+          {
+            "addColumn": {
+              "tableName": "provider",
+              "columns": [
+                {
+                  "column": {
+                    "name": "created_at",
+                    "type": "TIMESTAMP WITHOUT TIME ZONE",
+                    "constraints": {
+                      "nullable": false
+                    },
+                    "defaultValueComputed": "CURRENT_TIMESTAMP"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "updated_at",
+                    "type": "TIMESTAMP WITHOUT TIME ZONE",
+                    "constraints": {
+                      "nullable": false
+                    },
+                    "defaultValueComputed": "CURRENT_TIMESTAMP"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rollback": [
+          {
+            "dropColumn": {
+              "tableName": "provider",
+              "columnName": "created_at"
+            }
+          },
+          {
+            "dropColumn": {
+              "tableName": "provider",
+              "columnName": "updated_at"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

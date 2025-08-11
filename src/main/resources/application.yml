@@ -1,4 +1,3 @@
-
 # Spring Boot Configuration
 spring:
   application:
@@ -8,37 +7,41 @@ spring:
   # Database Configuration
   datasource:
     url: jdbc:postgresql://localhost:5432/nukkadseva
-    username: "postgres"
-    password: "yusuf@123"
-#  datasource:
-#    url: jdbc:postgresql://aws-0-ap-south-1.pooler.supabase.com:5432/postgres?sslmode=require
-#    username: postgres.onaepeojtpyopiovfkal
-#    password: g!ZEC8ME.W.W_Ae
-#    driver-class-name: org.postgresql.Driver
-  # JPA Configuration
+    username: postgres
+    password: yusuf@123
+
   jpa:
     show-sql: true
+    format_sql: true
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     properties:
-      dialect: org.hibernate.dialect.PostgreSQLDialect
       hibernate:
-        format_sql: true
+          dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  cloud:
+    azure:
+      storage:
+        connection-string: ${AZURE_STORAGE_CONNECTION_STRING:}
+        blob:
+          container-name: ${AZURE_BLOB_CONTAINER_NAME:nukkadseva-files}
 
   # Liquibase Configuration
   liquibase:
-    enabled: true
+    enabled: false
     change-log: classpath:db/changelog/db.changelog-master.json
     default-schema: public
     contexts: dev
-    # Set to true to drop all database objects before running migrations (use with caution in production!)
     drop-first: false
-    # Set to true to clear all checksums in the current log (useful for development)
-    clear-checksums: false
+    clear-checksums: true
 
-  # Server Configuration
-  server:
-    port: 8080
+# Storage Configuration
+storage:
+  type: local  # Use 'azure' for production, 'local' for development
+
+# Server Configuration
+server:
+  port: 8080
 
 # OpenAPI/Swagger Configuration
 springdoc:
@@ -52,7 +55,16 @@ springdoc:
 logging:
   level:
     org.springdoc: DEBUG
+#    org.hibernate: DEBUG
 
 jwt:
   secret:
-    key: ${JWT_SECRET_KEY}
+    key: bHVra2Fkc2V2YS1zZWNyZXQta2V5LWZvci1qd3QtYXV0aGVudGljYXRpb24tYW5kLWF1dGhvcml6YXRpb24=
+    expiration: 86400000
+
+  #  datasource:
+  #    url: jdbc:postgresql://aws-0-ap-south-1.pooler.supabase.com:5432/postgres?sslmode=require
+  #    username: postgres.onaepeojtpyopiovfkal
+  #    password: g!ZEC8ME.W.W_Ae
+  #    driver-class-name: org.postgresql.Driver
+  # JPA Configuration

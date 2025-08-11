@@ -1,0 +1,37 @@
+{
+  "databaseChangeLog": [
+    {
+      "changeSet": {
+        "id": "remove-provider-selfie-column",
+        "author": "system",
+        "changes": [
+          {
+            "dropColumn": {
+              "tableName": "provider",
+              "columnName": "selfie"
+            }
+          }
+        ],
+        "rollback": [
+          {
+            "addColumn": {
+              "tableName": "provider",
+              "columns": [
+                {
+                  "column": {
+                    "name": "selfie",
+                    "type": "TEXT",
+                    "constraints": {
+                      "nullable": true
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+
