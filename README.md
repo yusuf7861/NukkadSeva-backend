@@ -1,9 +1,6 @@
 # NukkadSeva Backend
 
-[![Node.js](https://img.shields.io/badge/Node.js-18.x-green.svg)](https://nodejs.org/)
-[![Express](https://img.shields.io/badge/Express-4.x-blue.svg)](https://expressjs.com/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-6.x-green.svg)](https://www.mongodb.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js](https://img.shields.io/badge/Node.js-18.x-green.svg)](https://nodejs.org/) [![Express](https://img.shields.io/badge/Express-4.x-blue.svg)](https://expressjs.com/) [![MongoDB](https://img.shields.io/badge/MongoDB-6.x-green.svg)](https://www.mongodb.com/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **NukkadSeva** is a comprehensive local services marketplace that connects service providers with customers in their neighborhood. This backend API powers the entire platform with robust authentication, service management, booking systems, and real-time communication features.
 
@@ -25,6 +22,7 @@
 ```
 
 ### Core Components
+
 - **Authentication Service**: JWT-based auth with role management
 - **Service Management**: CRUD operations for services and categories
 - **Booking System**: Complete booking lifecycle management
@@ -36,6 +34,7 @@
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js 18.x or higher
 - MongoDB 6.x or higher
 - npm or yarn package manager
@@ -53,49 +52,18 @@ npm install
 # Copy environment configuration
 cp .env.example .env
 
-# Configure your environment variables (see Configuration section)
+# Configure your environment variables (see .env.example for required variables)
 vim .env
 
 # Start development server
 npm run dev
 ```
 
-The API will be available at `http://localhost:3000`
+The API will be available at http://localhost:3000
 
 ## ⚙️ Configuration
 
-Create a `.env` file in the root directory with the following variables:
-
-```env
-# Server Configuration
-PORT=3000
-NODE_ENV=development
-
-# Database
-MONGODB_URI=mongodb://localhost:27017/nukkadseva
-
-# Authentication
-JWT_SECRET=your-super-secret-jwt-key
-JWT_EXPIRE=7d
-
-# Email Service
-EMAIL_SERVICE=gmail
-EMAIL_USER=your-email@gmail.com
-EMAIL_PASS=your-app-password
-
-# Payment Gateway
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-
-# Media Storage
-CLOUDINARY_CLOUD_NAME=your-cloud-name
-CLOUDINARY_API_KEY=your-api-key
-CLOUDINARY_API_SECRET=your-api-secret
-
-# External Services
-GOOGLE_MAPS_API_KEY=your-google-maps-key
-FCM_SERVER_KEY=your-fcm-server-key
-```
+Create a `.env` file in the root directory with the necessary environment variables. See `.env.example` for a complete list of required configuration variables including database connection, authentication secrets, and external service credentials.
 
 ## 📁 Project Structure
 
@@ -134,56 +102,17 @@ src/
 └── app.js               # Application entry point
 ```
 
-## 🔌 API Endpoints
+## 🔌 API Overview
 
-### Authentication
-```
-POST   /api/auth/register          # User registration
-POST   /api/auth/login             # User login
-POST   /api/auth/logout            # User logout
-POST   /api/auth/forgot-password   # Password reset request
-POST   /api/auth/reset-password    # Password reset
-GET    /api/auth/me                # Get current user
-PUT    /api/auth/update-profile    # Update user profile
-```
+The API provides comprehensive endpoints for:
 
-### Services
-```
-GET    /api/services               # Get all services
-GET    /api/services/:id           # Get service by ID
-POST   /api/services               # Create new service
-PUT    /api/services/:id           # Update service
-DELETE /api/services/:id           # Delete service
-GET    /api/services/category/:cat # Get services by category
-GET    /api/services/search        # Search services
-```
+- **Authentication**: User registration, login, profile management
+- **Services**: Service CRUD operations, search, and categorization
+- **Bookings**: Complete booking lifecycle management
+- **Users**: Profile management and role-based features
+- **Payments**: Secure payment processing and transaction history
 
-### Bookings
-```
-GET    /api/bookings               # Get user bookings
-GET    /api/bookings/:id           # Get booking by ID
-POST   /api/bookings               # Create new booking
-PUT    /api/bookings/:id           # Update booking status
-DELETE /api/bookings/:id           # Cancel booking
-POST   /api/bookings/:id/review    # Add review for booking
-```
-
-### Users
-```
-GET    /api/users/profile          # Get user profile
-PUT    /api/users/profile          # Update user profile
-GET    /api/users/bookings         # Get user bookings
-GET    /api/users/services         # Get user services (for providers)
-POST   /api/users/become-provider  # Upgrade to service provider
-```
-
-### Payments
-```
-POST   /api/payments/create-intent # Create payment intent
-POST   /api/payments/confirm       # Confirm payment
-POST   /api/payments/webhook       # Stripe webhook
-GET    /api/payments/history       # Payment history
-```
+For detailed API documentation, visit the `/docs` endpoint when running the application.
 
 ## 🧪 Testing
 
@@ -201,76 +130,11 @@ npm test -- --grep "Authentication"
 npm run test:watch
 ```
 
-## 📊 Database Schema
-
-### User Model
-```javascript
-{
-  _id: ObjectId,
-  name: String,
-  email: String,
-  password: String (hashed),
-  phone: String,
-  role: ['customer', 'provider', 'admin'],
-  profile: {
-    avatar: String,
-    bio: String,
-    location: {
-      address: String,
-      coordinates: [Number] // [longitude, latitude]
-    }
-  },
-  verification: {
-    email: Boolean,
-    phone: Boolean,
-    document: Boolean
-  },
-  createdAt: Date,
-  updatedAt: Date
-}
-```
-
-### Service Model
-```javascript
-{
-  _id: ObjectId,
-  title: String,
-  description: String,
-  category: String,
-  provider: ObjectId (User),
-  pricing: {
-    type: ['fixed', 'hourly', 'custom'],
-    amount: Number,
-    currency: String
-  },
-  availability: {
-    days: [String],
-    hours: {
-      start: String,
-      end: String
-    }
-  },
-  location: {
-    address: String,
-    coordinates: [Number],
-    serviceArea: Number // radius in km
-  },
-  media: [String], // URLs
-  ratings: {
-    average: Number,
-    count: Number
-  },
-  status: ['active', 'inactive', 'suspended'],
-  createdAt: Date,
-  updatedAt: Date
-}
-```
-
 ## 🔄 Deployment
 
 ### Production Deployment
 
-1. **Prepare production environment:**
+1. Prepare production environment:
 ```bash
 # Build the application
 npm run build
@@ -279,7 +143,7 @@ npm run build
 export NODE_ENV=production
 ```
 
-2. **Database setup:**
+2. Database setup:
 ```bash
 # Run migrations
 npm run migrate
@@ -288,7 +152,7 @@ npm run migrate
 npm run seed
 ```
 
-3. **Process management with PM2:**
+3. Process management with PM2:
 ```bash
 # Install PM2
 npm install -g pm2
@@ -331,24 +195,26 @@ docker-compose up -d
 ## 📈 Monitoring & Logging
 
 ### Logging
+
 - **Winston**: Structured logging with multiple transports
 - **Log Levels**: Error, warn, info, debug
 - **Log Rotation**: Daily rotation with compression
 - **Error Tracking**: Integration with Sentry for error monitoring
 
 ### Monitoring
-- **Health Checks**: `/health` endpoint for service health
+
+- **Health Checks**: /health endpoint for service health
 - **Metrics**: Custom metrics collection
 - **Performance**: Request/response time monitoring
 - **Alerts**: Automated alerting for critical issues
 
 ## 🤝 Contributing
 
-1. **Fork the repository**
-2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
-3. **Commit your changes**: `git commit -m 'Add amazing feature'`
-4. **Push to the branch**: `git push origin feature/amazing-feature`
-5. **Open a Pull Request**
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m 'Add amazing feature'`
+4. Push to the branch: `git push origin feature/amazing-feature`
+5. Open a Pull Request
 
 ### Development Guidelines
 
@@ -374,10 +240,12 @@ npm run format
 ## 📋 API Documentation
 
 Comprehensive API documentation is available at:
-- **Development**: `http://localhost:3000/docs`
-- **Production**: `https://api.nukkadseva.com/docs`
+
+- **Development**: http://localhost:3000/docs
+- **Production**: https://api.nukkadseva.com/docs
 
 The documentation includes:
+
 - Interactive API explorer
 - Request/response examples
 - Authentication guides
@@ -396,7 +264,7 @@ The documentation includes:
 ## 📞 Support & Contact
 
 - **GitHub Issues**: [Report bugs or request features](https://github.com/yusuf7861/NukkadSeva-backend/issues)
-- **Documentation**: [Full documentation](https://docs.nukkadseva.com)
+- **Documentation**: [Full documentation](https://docs.nukkadseva.com/)
 - **Email**: support@nukkadseva.com
 - **Discord**: [Join our community](https://discord.gg/nukkadseva)
 
