@@ -36,6 +36,12 @@ public class ProviderController {
         return new ResponseEntity<>(pendingProviders, HttpStatus.OK);
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<List<Provider>> getAllProviders() {
+        List<Provider> allProviders = providerService.getAllProviders();
+        return new ResponseEntity<>(allProviders, HttpStatus.OK);
+    }
+
     @PostMapping("/{id}/approve")
     public ResponseEntity<Provider> approveProvider(@PathVariable Long id) {
         Provider approvedProvider = providerService.approveProvider(id);
@@ -55,4 +61,3 @@ public class ProviderController {
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 }
-

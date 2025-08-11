@@ -105,6 +105,10 @@ public class ProviderService {
         return providerRepository.findByStatus("PENDING");
     }
 
+    public List<Provider> getAllProviders() {
+        return providerRepository.findAll();
+    }
+
     public Provider approveProvider(Long providerId) {
         Provider provider = providerRepository.findById(providerId)
                 .orElseThrow(() -> new RuntimeException("Provider not found with id: " + providerId));
