@@ -135,6 +135,7 @@ npm run test:watch
 ### Production Deployment
 
 1. Prepare production environment:
+
 ```bash
 # Build the application
 npm run build
@@ -144,6 +145,7 @@ export NODE_ENV=production
 ```
 
 2. Database setup:
+
 ```bash
 # Run migrations
 npm run migrate
@@ -153,6 +155,7 @@ npm run seed
 ```
 
 3. Process management with PM2:
+
 ```bash
 # Install PM2
 npm install -g pm2
@@ -203,10 +206,135 @@ docker-compose up -d
 
 ### Monitoring
 
-- **Health Checks**: /health endpoint for service health
+- **Health Checks**: `/health` endpoint for service health
 - **Metrics**: Custom metrics collection
 - **Performance**: Request/response time monitoring
 - **Alerts**: Automated alerting for critical issues
+
+## 📊 Third-Party Visualization
+
+### API Docs
+
+- **Redocly**: Beautiful, interactive API documentation
+- **Swagger UI**: Standard OpenAPI documentation interface
+
+### Metrics & Dashboards
+
+- **Prometheus/Micrometer**: Application metrics collection
+- **Grafana**: Rich visualization dashboards and alerting
+
+### Tracing
+
+- **OpenTelemetry**: Distributed tracing standard
+- **Jaeger/Tempo**: Trace visualization and analysis
+
+### Logs
+
+- **ELK Stack**: Elasticsearch, Logstash, Kibana for log analysis
+- **Loki**: Lightweight log aggregation system
+
+### Database ERD
+
+- **DbSchema**: Professional database design tool
+- **DataGrip**: Powerful database IDE with ERD capabilities
+
+### Product Analytics
+
+- **Metabase**: Open source business intelligence
+- **PostHog**: Product analytics and feature flags
+
+### Uptime/Load
+
+- **Better Uptime**: Simple uptime monitoring and status pages
+- **k6**: Modern load testing tool for performance validation
+
+### Environment Variables
+
+```bash
+# Core Application
+NODE_ENV
+PORT
+API_VERSION
+
+# Database
+MONGODB_URI
+REDIS_URL
+
+# Authentication
+JWT_SECRET
+JWT_REFRESH_SECRET
+JWT_EXPIRES_IN
+
+# External Services
+STRIPE_SECRET_KEY
+CLOUDINARY_CLOUD_NAME
+CLOUDINARY_API_KEY
+SENTRY_DSN
+
+# Monitoring
+PROMETHEUS_ENDPOINT
+GRAFANA_API_KEY
+JAEGER_ENDPOINT
+
+# Notifications
+SMTP_HOST
+SMTP_USER
+TWILIO_ACCOUNT_SID
+FCM_SERVER_KEY
+```
+
+### Crazy Visualizations
+
+- **3D Network Topology**: Visualize microservices architecture in 3D space
+- **Real-time Heatmaps**: Live user activity overlay on application screens
+- **Performance Constellation**: Star map showing service dependencies and health
+- **Code Complexity Galaxy**: Interactive visualization of codebase complexity
+- **User Journey Flow**: Sankey diagrams showing user paths through the application
+- **API Traffic Weather**: Weather metaphors for API endpoint performance
+
+### Getting Started (Local Stack)
+
+```yaml
+# docker-compose.monitoring.yml
+version: '3.8'
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-storage:/var/lib/grafana
+
+volumes:
+  grafana-storage:
+```
+
+```yaml
+# prometheus.yml
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'nukkadseva-backend'
+    static_configs:
+      - targets: ['host.docker.internal:8080']
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+```
 
 ## 🤝 Contributing
 
@@ -264,7 +392,7 @@ The documentation includes:
 ## 📞 Support & Contact
 
 - **GitHub Issues**: [Report bugs or request features](https://github.com/yusuf7861/NukkadSeva-backend/issues)
-- **Documentation**: [Full documentation](https://docs.nukkadseva.com/)
+- **Documentation**: [Full documentation](https://docs.nukkadseva.com)
 - **Email**: support@nukkadseva.com
 - **Discord**: [Join our community](https://discord.gg/nukkadseva)
 
