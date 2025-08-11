@@ -30,6 +30,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/send-verification-otp",
             "/verify-otp",
             "/api/providers/register",
+            "/api/provider/register",
+            "/api/provider/verify-email",
             "/logout",
             "/error"
     );

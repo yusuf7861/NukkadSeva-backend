@@ -109,5 +109,11 @@ public class Provider {
     private LocalDateTime updatedAt;
 
     @Column(name = "status", nullable = false, length = 20, columnDefinition = "VARCHAR(20) DEFAULT 'PENDING'")
-    private String status = "PENDING";
+    private String status = "PENDING"; // PENDING → VERIFIED → APPROVED/REJECTED
+
+    @Column(name = "verification_token", length = 500)
+    private String verificationToken;
+
+    @Column(name = "token_expires_at")
+    private LocalDateTime tokenExpiresAt;
 }

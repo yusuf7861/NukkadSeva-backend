@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/provider")
@@ -24,9 +25,20 @@ public class ProviderController {
             Provider registeredProvider = providerService.registerProvider(providerDto);
             return new ResponseEntity<>(registeredProvider, HttpStatus.CREATED);
         } catch (IOException e) {
-            return new ResponseEntity<>("Failed to process file: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(
+                Map.of("message", "Failed to process file: " + e.getMessage()),
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(
+                Map.of("message", e.getMessage()),
+                HttpStatus.BAD_REQUEST
+            );
         } catch (Exception e) {
-            return new ResponseEntity<>("An error occurred during registration: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(
+                Map.of("message", "An error occurred during registration: " + e.getMessage()),
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
     }
 
@@ -34,6 +46,12 @@ public class ProviderController {
     public ResponseEntity<List<Provider>> getPendingProviders() {
         List<Provider> pendingProviders = providerService.getPendingProviders();
         return new ResponseEntity<>(pendingProviders, HttpStatus.OK);
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<Provider>> getAllProviders() {
+        List<Provider> allProviders = providerService.getAllProviders();
+        return new ResponseEntity<>(allProviders, HttpStatus.OK);
     }
 
     @PostMapping("/{id}/approve")
@@ -54,5 +72,20 @@ public class ProviderController {
                 .map(provider -> new ResponseEntity<>(provider, HttpStatus.OK))
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
-}
 
+    @PostMapping("/verify-email")
+    public ResponseEntity<String> verifyProviderEmail(@RequestParam String token) {
+        boolean verified = providerService.verifyProviderEmail(token);
+        if (verified) {
+            return new ResponseEntity<>("Email verified successfully. Your application is now pending admin approval.", HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("Invalid or expired verification token.", HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping("/verified")
+    public ResponseEntity<List<Provider>> getVerifiedProviders() {
+        List<Provider> verifiedProviders = providerService.getProvidersByStatus("VERIFIED");
+        return new ResponseEntity<>(verifiedProviders, HttpStatus.OK);
+    }
+}
