@@ -25,11 +25,14 @@ public class Users {
     @Column(name = "role", nullable = false)
     private Role role;
 
+    @Column(name = "is_verified")
+    private boolean isVerified = false;
+
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "customer_id", referencedColumnName = "customer_id")
+    @JoinColumn(name = "customer_id", referencedColumnName = "id")
     private Customers customers;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "service_provider_id", referencedColumnName = "service_provider_id")
-    private ServiceProviders serviceProviders;
+    @JoinColumn(name = "provider_id", referencedColumnName = "provider_id")
+    private Provider provider;
 }

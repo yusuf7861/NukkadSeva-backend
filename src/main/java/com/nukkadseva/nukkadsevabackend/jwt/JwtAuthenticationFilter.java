@@ -26,14 +26,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final List<String> WHITELISTS_URLs = List.of(
             "/customer/register",
-            "/customer/login",
-            "/is-authenticated",
-            "/logout",
-            "/verify-otp",
+            "/login",
             "/send-verification-otp",
-            "/contact-us",
-            "/send-reset-otp",
-            "/reset-password",
+            "/verify-otp",
+            "/api/providers/register",
             "/logout",
             "/error"
     );

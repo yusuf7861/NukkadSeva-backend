@@ -35,6 +35,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -69,14 +70,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String customerLogin(UserRequest customerRequest) {
+    public String login(UserRequest userRequest) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            customerRequest.getEmail(), customerRequest.getPassword()
+                            userRequest.getEmail(), userRequest.getPassword()
                     )
             );
-            final UserDetails userDetails = userDetailsService.loadUserByUsername(customerRequest.getEmail());
+            final UserDetails userDetails = userDetailsService.loadUserByUsername(userRequest.getEmail());
 
             final String token = jwtUtil.generateToken(userDetails);
             return token;
@@ -92,7 +93,6 @@ public class UserServiceImpl implements UserService {
         if (byEmail.isPresent()) {
             throw new EmailAlreadyExistsException("Email already exists");
         }
-
         SecureRandom secureRandom = new SecureRandom();
         String resetOtp = String.format("%06d", secureRandom.nextInt(1_000_000));
         String token = jwtOtpUtil.generateOtpToken(email, resetOtp, 10);

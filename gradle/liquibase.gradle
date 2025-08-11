@@ -9,7 +9,7 @@ liquibase {
             password 'yusuf@123'
             
             // Changelog file location (relative to src/main/resources)
-            changelogFile 'db/changelog/db.changelog-master.json'
+            changelogFile 'classpath:db/changelog/db.changelog-master.json'
             
             // Reference URL for Hibernate integration
             referenceUrl 'hibernate:spring:com.nukkadseva.nukkadsevabackend.entity' +

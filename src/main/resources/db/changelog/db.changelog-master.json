@@ -2,26 +2,26 @@
   "databaseChangeLog": [
     {
       "include": {
-        "file": "31-01-changelog.json",
-        "relativeToChangelogFile": true
+        "file": "db/changelog/changes/v1-fix-timestamp-columns.json",
+        "relativeToChangelogFile": false
       }
     },
     {
       "include": {
-        "file": "20250801-Create_Customers_Table.json",
-        "relativeToChangelogFile": true
+        "file": "db/changelog/changes/v2-fix-govt-id-type.json",
+        "relativeToChangelogFile": false
       }
     },
     {
       "include": {
-        "file": "20250801-Create-Users-Table.json",
-        "relativeToChangelogFile": true
+        "file": "db/changelog/changes/v3-add-provider-timestamps.json",
+        "relativeToChangelogFile": false
       }
     },
     {
       "include": {
-        "file": "20250803-Add-Customer-And-Provider-to-Users.json",
-        "relativeToChangelogFile": true
+        "file": "db/changelog/changes/v4-remove-provider-selfie-column.json",
+        "relativeToChangelogFile": false
       }
     }
   ]

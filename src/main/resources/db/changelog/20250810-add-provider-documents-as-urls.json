@@ -1,0 +1,48 @@
+{
+  "databaseChangeLog": [
+    {
+      "changeSet": {
+        "id": "20250810-add-provider-documents-as-urls",
+        "author": "YusufJamal",
+        "changes": [
+          {
+            "modifyDataType": {
+              "tableName": "provider",
+              "columnName": "photograph",
+              "newDataType": "TEXT"
+            }
+          },
+          {
+            "modifyDataType": {
+              "tableName": "provider",
+              "columnName": "govt_id",
+              "newDataType": "TEXT"
+            }
+          },
+          {
+            "modifyDataType": {
+              "tableName": "provider",
+              "columnName": "qualification",
+              "newDataType": "TEXT"
+            }
+          },
+          {
+            "modifyDataType": {
+              "tableName": "provider",
+              "columnName": "police_verification",
+              "newDataType": "TEXT"
+            }
+          },
+          {
+            "modifyDataType": {
+              "tableName": "provider",
+              "columnName": "profile_picture",
+              "newDataType": "TEXT"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+

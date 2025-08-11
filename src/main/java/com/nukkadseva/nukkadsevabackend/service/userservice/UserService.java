@@ -11,7 +11,7 @@ import java.io.IOException;
 
 public interface UserService {
     void customerRegistration(UserRequest userRequest);
-    String customerLogin(UserRequest userRequest);
+    String login(UserRequest userRequest);
     String sendVerificationOtp(String email) throws MessagingException, IOException, TemplateException;
     boolean verifyOtp(VerifyOtpRequest request);
 
