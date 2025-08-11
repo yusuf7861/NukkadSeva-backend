@@ -7,6 +7,7 @@ import com.nukkadseva.nukkadsevabackend.entity.enums.Role;
 import com.nukkadseva.nukkadsevabackend.repository.ProviderRepository;
 import com.nukkadseva.nukkadsevabackend.repository.UserRepository;
 import com.nukkadseva.nukkadsevabackend.services.AzureBlobStorageService;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -291,15 +292,9 @@ public class ProviderService {
             helper.setTo(email);
             helper.setSubject("NukkadSeva Provider Email Verification");
 
-            String verificationLink = "https://your-frontend-url/verify-email?token=" + token + "&id=" + providerId;
-
-            String emailContent =
-                "<h2>NukkadSeva Email Verification</h2>" +
-                "<p>Thank you for registering as a service provider on NukkadSeva.</p>" +
-                "<p>Please verify your email by clicking the link below:</p>" +
-                "<p><a href=\"" + verificationLink + "\">Verify Email</a></p>" +
-                "<p>This link will expire in 24 hours.</p>" +
-                "<p>If you did not register, please ignore this email.</p>";
+            // Use localhost for local development, can be configured for production
+            String baseUrl = "http://localhost:9002"; // Frontend URL for local development
+            String emailContent = getString(token, providerId, baseUrl);
 
             helper.setText(emailContent, true);
             mailSender.send(message);
@@ -307,6 +302,22 @@ public class ProviderService {
         } catch (MessagingException e) {
             System.err.println("Failed to send verification email: " + e.getMessage());
         }
+    }
+
+    @NotNull
+    private static String getString(String token, Long providerId, String baseUrl) {
+        String verificationLink = baseUrl + "/verify-email?token=" + token + "&id=" + providerId;
+
+        String emailContent =
+            "<h2>NukkadSeva Email Verification</h2>" +
+            "<p>Thank you for registering as a service provider on NukkadSeva.</p>" +
+            "<p>Please verify your email by clicking the link below:</p>" +
+            "<p><a href=\"" + verificationLink + "\" style=\"background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;\">Verify Email</a></p>" +
+            "<p>Or copy and paste this link in your browser:</p>" +
+            "<p>" + verificationLink + "</p>" +
+            "<p>This link will expire in 24 hours.</p>" +
+            "<p>If you did not register, please ignore this email.</p>";
+        return emailContent;
     }
 
     /**
