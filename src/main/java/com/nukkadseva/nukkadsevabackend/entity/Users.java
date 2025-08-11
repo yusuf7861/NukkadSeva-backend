@@ -1,11 +1,9 @@
 package com.nukkadseva.nukkadsevabackend.entity;
 
 import com.nukkadseva.nukkadsevabackend.entity.enums.Role;
-import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.jpa.domain.AbstractAuditable;
 
 @Getter
 @Setter

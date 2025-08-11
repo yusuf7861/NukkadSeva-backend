@@ -17,6 +17,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.io.IOException;
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -46,6 +47,16 @@ public class ProviderService {
     private static final SecureRandom random = new SecureRandom();
 
     public Provider registerProvider(ProviderDto providerDto) throws IOException {
+        // Check for duplicate email
+        if (providerRepository.findByEmail(providerDto.getEmail()).isPresent()) {
+            throw new RuntimeException("A provider with this email already exists");
+        }
+
+        // Check for duplicate mobile number
+        if (providerRepository.findByMobileNumber(providerDto.getMobileNumber()).isPresent()) {
+            throw new RuntimeException("A provider with this mobile number already exists");
+        }
+
         Provider provider = new Provider();
         provider.setFullName(providerDto.getFullName());
         provider.setDob(providerDto.getDob());
@@ -92,13 +103,49 @@ public class ProviderService {
             provider.setProfilePicture(profilePictureUrl);
         }
 
-        // Set default values for approval and verification status
-        provider.setIsApproved(false);
+        // Set initial status and verification
+        provider.setStatus("PENDING");
         provider.setIsEmailVerified(false);
+        provider.setIsApproved(false);
 
-        // createdAt is automatically set by @CreationTimestamp annotation
+        // Generate verification token
+        String verificationToken = generateSecureToken();
+        provider.setVerificationToken(verificationToken);
+        provider.setTokenExpiresAt(LocalDateTime.now().plusHours(24)); // Token expires in 24 hours
 
-        return providerRepository.save(provider);
+        Provider savedProvider = providerRepository.save(provider);
+
+        // Send verification email
+        sendVerificationEmail(provider.getEmail(), verificationToken, provider.getId());
+
+        return savedProvider;
+    }
+
+    public boolean verifyProviderEmail(String token) {
+        Optional<Provider> providerOpt = providerRepository.findByVerificationToken(token);
+
+        if (providerOpt.isEmpty()) {
+            return false;
+        }
+
+        Provider provider = providerOpt.get();
+
+        // Check if token is expired
+        if (provider.getTokenExpiresAt().isBefore(LocalDateTime.now())) {
+            return false;
+        }
+
+        // Update provider status
+        provider.setStatus("VERIFIED");
+        provider.setIsEmailVerified(true);
+        provider.setVerificationToken(null); // Clear the token
+        provider.setTokenExpiresAt(null);
+
+        providerRepository.save(provider);
+
+        notifyAdminsOfNewVerifiedProvider(provider);
+
+        return true;
     }
 
     public List<Provider> getPendingProviders() {
@@ -107,6 +154,10 @@ public class ProviderService {
 
     public List<Provider> getAllProviders() {
         return providerRepository.findAll();
+    }
+
+    public List<Provider> getProvidersByStatus(String status) {
+        return providerRepository.findByStatus(status);
     }
 
     public Provider approveProvider(Long providerId) {
@@ -227,5 +278,48 @@ public class ProviderService {
         } catch (MessagingException e) {
             System.err.println("Failed to send rejection email: " + e.getMessage());
         }
+    }
+
+    /**
+     * Sends a verification email to the provider
+     */
+    private void sendVerificationEmail(String email, String token, Long providerId) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+            helper.setTo(email);
+            helper.setSubject("NukkadSeva Provider Email Verification");
+
+            String verificationLink = "https://your-frontend-url/verify-email?token=" + token + "&id=" + providerId;
+
+            String emailContent =
+                "<h2>NukkadSeva Email Verification</h2>" +
+                "<p>Thank you for registering as a service provider on NukkadSeva.</p>" +
+                "<p>Please verify your email by clicking the link below:</p>" +
+                "<p><a href=\"" + verificationLink + "\">Verify Email</a></p>" +
+                "<p>This link will expire in 24 hours.</p>" +
+                "<p>If you did not register, please ignore this email.</p>";
+
+            helper.setText(emailContent, true);
+            mailSender.send(message);
+
+        } catch (MessagingException e) {
+            System.err.println("Failed to send verification email: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Notifies admins of a new verified provider (optional implementation)
+     */
+    private void notifyAdminsOfNewVerifiedProvider(Provider provider) {
+        // Implement admin notification logic here (e.g., send email to admin)
+    }
+
+    /**
+     * Generates a secure random token for verification
+     */
+    private String generateSecureToken() {
+        return java.util.UUID.randomUUID().toString();
     }
 }

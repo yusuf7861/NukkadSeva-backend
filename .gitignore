@@ -38,3 +38,5 @@ out/
 
 ### Enviroment variables ###
 src/main/resources/.env
+
+uploads
