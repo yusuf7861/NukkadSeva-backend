@@ -23,6 +23,18 @@ public class AdminController {
         return new ResponseEntity<>(pendingProviders, HttpStatus.OK);
     }
 
+    @GetMapping("/providers/approved")
+    public ResponseEntity<List<Provider>> getApprovedProviders() {
+        List<Provider> approvedProviders = providerService.getProvidersByStatus("APPROVED");
+        return new ResponseEntity<>(approvedProviders, HttpStatus.OK);
+    }
+
+    @GetMapping("/providers/rejected")
+    public ResponseEntity<List<Provider>> getRejectedProviders() {
+        List<Provider> rejectedProviders = providerService.getProvidersByStatus("REJECTED");
+        return new ResponseEntity<>(rejectedProviders, HttpStatus.OK);
+    }
+
     @PostMapping("/providers/{id}/approve")
     public ResponseEntity<?> approveProvider(@PathVariable Long id) {
         try {
@@ -47,9 +59,20 @@ public class AdminController {
     }
 
     @PostMapping("/providers/{id}/reject")
-    public ResponseEntity<?> rejectProvider(@PathVariable Long id) {
+    public ResponseEntity<?> rejectProvider(@PathVariable Long id, @RequestBody Map<String, String> requestBody) {
         try {
-            Provider rejectedProvider = providerService.rejectProvider(id);
+            String reason = requestBody.get("reason");
+            if (reason == null || reason.trim().isEmpty()) {
+                return new ResponseEntity<>(
+                    Map.of(
+                        "success", false,
+                        "message", "Rejection reason is required"
+                    ),
+                    HttpStatus.BAD_REQUEST
+                );
+            }
+
+            Provider rejectedProvider = providerService.rejectProvider(id, reason);
             return new ResponseEntity<>(
                 Map.of(
                     "success", true,

@@ -10,6 +10,7 @@ import java.util.Optional;
 @Repository
 public interface ProviderRepository extends JpaRepository<Provider, Long> {
     List<Provider> findByStatus(String status);
+    List<Provider> findByStatusAndIsEmailVerified(String status, Boolean isEmailVerified);
     Optional<Provider> findByVerificationToken(String verificationToken);
     Optional<Provider> findByEmail(String email);
     Optional<Provider> findByMobileNumber(String mobileNumber);

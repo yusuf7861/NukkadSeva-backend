@@ -61,8 +61,8 @@ public class ProviderController {
     }
 
     @PostMapping("/{id}/reject")
-    public ResponseEntity<Provider> rejectProvider(@PathVariable Long id) {
-        Provider rejectedProvider = providerService.rejectProvider(id);
+    public ResponseEntity<Provider> rejectProvider(@PathVariable Long id, @RequestParam String reason) {
+        Provider rejectedProvider = providerService.rejectProvider(id, reason);
         return new ResponseEntity<>(rejectedProvider, HttpStatus.OK);
     }
 
@@ -81,11 +81,5 @@ public class ProviderController {
         } else {
             return new ResponseEntity<>("Invalid or expired verification token.", HttpStatus.BAD_REQUEST);
         }
-    }
-
-    @GetMapping("/verified")
-    public ResponseEntity<List<Provider>> getVerifiedProviders() {
-        List<Provider> verifiedProviders = providerService.getProvidersByStatus("VERIFIED");
-        return new ResponseEntity<>(verifiedProviders, HttpStatus.OK);
     }
 }

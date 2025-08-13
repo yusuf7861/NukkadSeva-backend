@@ -136,8 +136,7 @@ public class ProviderService {
             return false;
         }
 
-        // Update provider status
-        provider.setStatus("VERIFIED");
+        // Update only email verification status, keep status as PENDING
         provider.setIsEmailVerified(true);
         provider.setVerificationToken(null); // Clear the token
         provider.setTokenExpiresAt(null);
@@ -164,7 +163,17 @@ public class ProviderService {
     public Provider approveProvider(Long providerId) {
         Provider provider = providerRepository.findById(providerId)
                 .orElseThrow(() -> new RuntimeException("Provider not found with id: " + providerId));
+
+        if (!"PENDING".equals(provider.getStatus())) {
+            throw new RuntimeException("Only pending providers can be approved");
+        }
+
+        if (!provider.getIsEmailVerified()) {
+            throw new RuntimeException("Provider email must be verified before approval");
+        }
+
         provider.setStatus("APPROVED");
+        provider.setIsApproved(true);
 
         // Generate a secure random password
         String generatedPassword = generateSecurePassword(12);
@@ -186,12 +195,18 @@ public class ProviderService {
         return savedProvider;
     }
 
-    public Provider rejectProvider(Long providerId) {
+    public Provider rejectProvider(Long providerId, String reason) {
         Provider provider = providerRepository.findById(providerId)
                 .orElseThrow(() -> new RuntimeException("Provider not found with id: " + providerId));
-        provider.setStatus("REJECTED");
 
-        sendProviderRejectionEmail(provider.getEmail());
+        if (!"PENDING".equals(provider.getStatus())) {
+            throw new RuntimeException("Only pending providers can be rejected");
+        }
+
+        provider.setStatus("REJECTED");
+        provider.setRejectionReason(reason);
+
+        sendProviderRejectionEmail(provider.getEmail(), reason);
 
         return providerRepository.save(provider);
     }
@@ -259,7 +274,7 @@ public class ProviderService {
     /**
      * Sends a rejection notification email to the provider
      */
-    private void sendProviderRejectionEmail(String email) {
+    private void sendProviderRejectionEmail(String email, String reason) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
@@ -270,6 +285,8 @@ public class ProviderService {
             String emailContent =
                 "<h2>NukkadSeva Provider Application</h2>" +
                 "<p>We regret to inform you that your application to become a service provider on NukkadSeva has not been approved at this time.</p>" +
+                "<p><strong>Reason for rejection:</strong></p>" +
+                "<p>" + reason + "</p>" +
                 "<p>If you believe there has been an error or would like more information, please contact our support team.</p>" +
                 "<p>Thank you for your interest in NukkadSeva.</p>";
 
