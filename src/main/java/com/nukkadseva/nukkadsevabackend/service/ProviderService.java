@@ -7,12 +7,17 @@ import com.nukkadseva.nukkadsevabackend.entity.enums.Role;
 import com.nukkadseva.nukkadsevabackend.repository.ProviderRepository;
 import com.nukkadseva.nukkadsevabackend.repository.UserRepository;
 import com.nukkadseva.nukkadsevabackend.services.AzureBlobStorageService;
+import jakarta.persistence.criteria.Predicate;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -189,7 +194,6 @@ public class ProviderService {
         provider.setUser(user);
         Provider savedProvider = providerRepository.save(provider);
 
-        // Send email with login credentials
         sendProviderApprovalEmail(provider.getEmail(), generatedPassword);
 
         return savedProvider;
@@ -242,6 +246,29 @@ public class ProviderService {
         }
 
         return new String(passwordArray);
+    }
+
+    public Page<Provider> searchProviders(String category, String city, String pincode, int page, int limit) {
+        Pageable pageable = PageRequest.of(page - 1, limit);
+
+        Specification<Provider> spec = (root, criteriaQuery, criteriaBuilder) -> {
+            Predicate predicate = criteriaBuilder.conjunction();
+
+            if (category != null && !category.isEmpty()) {
+                predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("serviceCategory"), category));
+            }
+            
+            if (city != null && !city.isEmpty()) {
+                predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("city"), city));
+            }
+            if (pincode != null && !pincode.isEmpty()) {
+                predicate = criteriaBuilder.and(predicate, criteriaBuilder.like(root.get("serviceArea"), "%" + pincode + "%"));
+            }
+
+            return predicate;
+        };
+
+        return providerRepository.findAll(spec, pageable);
     }
 
     /**
