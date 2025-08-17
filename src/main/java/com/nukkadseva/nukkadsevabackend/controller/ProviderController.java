@@ -3,6 +3,8 @@ package com.nukkadseva.nukkadsevabackend.controller;
 import com.nukkadseva.nukkadsevabackend.dto.ProviderDto;
 import com.nukkadseva.nukkadsevabackend.entity.Provider;
 import com.nukkadseva.nukkadsevabackend.service.ProviderService;
+import freemarker.template.TemplateException;
+import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -55,13 +57,13 @@ public class ProviderController {
     }
 
     @PostMapping("/{id}/approve")
-    public ResponseEntity<Provider> approveProvider(@PathVariable Long id) {
+    public ResponseEntity<Provider> approveProvider(@PathVariable Long id) throws MessagingException, TemplateException, IOException {
         Provider approvedProvider = providerService.approveProvider(id);
         return new ResponseEntity<>(approvedProvider, HttpStatus.OK);
     }
 
     @PostMapping("/{id}/reject")
-    public ResponseEntity<Provider> rejectProvider(@PathVariable Long id, @RequestParam String reason) {
+    public ResponseEntity<Provider> rejectProvider(@PathVariable Long id, @RequestParam String reason) throws TemplateException, IOException {
         Provider rejectedProvider = providerService.rejectProvider(id, reason);
         return new ResponseEntity<>(rejectedProvider, HttpStatus.OK);
     }

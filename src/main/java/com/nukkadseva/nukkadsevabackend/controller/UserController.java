@@ -32,9 +32,14 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/customer/register")
-    public ResponseEntity<String> customerRegistration(@Valid @RequestBody UserRequest userRequest) {
+    public ResponseEntity<Map<String, Object>> customerRegistration(@Valid @RequestBody UserRequest userRequest) {
         userService.customerRegistration(userRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully.");
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("httpStatusCode", HttpStatus.CREATED.value());
+        response.put("message", "User registered successfully.");
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/login")

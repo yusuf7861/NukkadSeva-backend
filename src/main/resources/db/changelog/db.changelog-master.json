@@ -23,6 +23,12 @@
         "file": "db/changelog/changes/v4-remove-provider-selfie-column.json",
         "relativeToChangelogFile": false
       }
+    },
+    {
+      "include": {
+        "file": "db/changelog/changes/v5-allow-null-customers-min-profile.json",
+        "relativeToChangelogFile": false
+      }
     }
   ]
 }

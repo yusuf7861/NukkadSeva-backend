@@ -4,6 +4,7 @@ import com.nukkadseva.nukkadsevabackend.dto.request.UserRequest;
 import com.nukkadseva.nukkadsevabackend.dto.request.VerifyOtpRequest;
 import com.nukkadseva.nukkadsevabackend.dto.response.AuthResponse;
 import com.nukkadseva.nukkadsevabackend.entity.Users;
+import com.nukkadseva.nukkadsevabackend.entity.Customers;
 import com.nukkadseva.nukkadsevabackend.entity.enums.Role;
 import com.nukkadseva.nukkadsevabackend.exception.EmailAlreadyExistsException;
 import com.nukkadseva.nukkadsevabackend.exception.InvalidOtpException;
@@ -11,6 +12,7 @@ import com.nukkadseva.nukkadsevabackend.exception.UserAuthenticationException;
 import com.nukkadseva.nukkadsevabackend.jwt.JwtOtpUtil;
 import com.nukkadseva.nukkadsevabackend.jwt.JwtUtil;
 import com.nukkadseva.nukkadsevabackend.repository.UserRepository;
+import com.nukkadseva.nukkadsevabackend.repository.CustomerRepository;
 import com.nukkadseva.nukkadsevabackend.service.userservice.AppUserDetailsService;
 import com.nukkadseva.nukkadsevabackend.service.userservice.UserService;
 import freemarker.template.Configuration;
@@ -32,6 +34,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -46,6 +49,7 @@ import java.util.Random;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final AppUserDetailsService userDetailsService;
@@ -55,6 +59,7 @@ public class UserServiceImpl implements UserService {
     private final Configuration freemarkerConfig;
 
     @Override
+    @Transactional
     public void customerRegistration(UserRequest userRequest) {
 
         if (userRepository.existsByEmail(userRequest.getEmail())) {
@@ -66,6 +71,16 @@ public class UserServiceImpl implements UserService {
         users.setPassword(passwordEncoder.encode(userRequest.getPassword()));
         users.setRole(Role.CUSTOMER);
 
+        // Create and persist a Customers profile first to ensure ID is generated
+        Customers customer = new Customers();
+        customer.setEmail(userRequest.getEmail());
+        Customers savedCustomer = customerRepository.save(customer);
+
+        // Link both sides of association; Users owns the FK (customer_id)
+        users.setCustomers(savedCustomer);
+        savedCustomer.setUser(users);
+
+        // Save owning side (Users) so the customer_id FK is persisted
         userRepository.save(users);
     }
 

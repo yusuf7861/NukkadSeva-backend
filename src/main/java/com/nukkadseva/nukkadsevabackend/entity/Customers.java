@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Getter
 @Setter
@@ -18,17 +20,18 @@ public class Customers {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "full_name", nullable = false)
+    @Column(name = "full_name")
     private String fullName;
 
-    @Column(name = "mobile_number", nullable = false, unique = true)
+    @Column(name = "mobile_number", unique = true)
     private String mobileNumber;
 
     @Column(name = "email", unique = true)
     private String email;
 
-    @Lob
-    @Column(name = "photograph", columnDefinition = "bytea")
+    // Store as PostgreSQL bytea, not OID/large object
+    @JdbcTypeCode(SqlTypes.BINARY)
+    @Column(name = "photograph")
     private byte[] photograph;
 
     @Column(name = "photograph_content_type")
@@ -37,4 +40,8 @@ public class Customers {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id", referencedColumnName = "address_id")
     private Address address;
+
+    // Inverse side of Users.customers association (Users owns FK via customer_id)
+    @OneToOne(mappedBy = "customers")
+    private Users user;
 }
