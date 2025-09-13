@@ -29,7 +29,7 @@ public class LocalFileStorageService implements AzureBlobStorageService {
             Path uploadPath = Paths.get(uploadDir);
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
-                System.out.println("Created upload directory: " + uploadPath.toAbsolutePath());
+                log.info("Created upload directory: {}", uploadPath.toAbsolutePath());
             }
         } catch (IOException e) {
             log.error("Could not create upload directory: {}", e.getMessage());
