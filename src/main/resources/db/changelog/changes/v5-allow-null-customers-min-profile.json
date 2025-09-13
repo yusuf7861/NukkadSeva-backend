@@ -1,0 +1,26 @@
+{
+  "databaseChangeLog": [
+    {
+      "changeSet": {
+        "id": "20250817-allow-null-customers-fullname-mobile",
+        "author": "junie",
+        "changes": [
+          {
+            "dropNotNullConstraint": {
+              "columnDataType": "VARCHAR(255)",
+              "columnName": "full_name",
+              "tableName": "customers"
+            }
+          },
+          {
+            "dropNotNullConstraint": {
+              "columnDataType": "VARCHAR(255)",
+              "columnName": "mobile_number",
+              "tableName": "customers"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

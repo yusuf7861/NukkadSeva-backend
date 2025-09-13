@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>NukkadSeva Email Verification</title>
+</head>
+<body style="margin:0; padding:0; background-color:#f8f4e9; font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif; color:#3b2f2f;">
+
+<table align="center" width="600" style="background:#fffdf7; border: 1px solid #d9c8a9; border-radius: 12px; box-shadow: 0 6px 14px rgba(0,0,0,0.15);">
+
+    <!-- Header -->
+    <tr>
+        <td style="padding:25px; text-align:center; background:linear-gradient(to right, #e9dcc6, #f8f4e9); border-bottom:1px solid #d9c8a9;">
+            <h1 style="margin:0; font-size:26px; color:#5c4433; letter-spacing:1px; text-transform:uppercase;">
+                NukkadSeva
+            </h1>
+            <p style="margin:5px 0 0; font-size:14px; font-style:italic; color:#7a6a57;">Email Verification</p>
+        </td>
+    </tr>
+
+    <!-- Body -->
+    <tr>
+        <td style="padding:30px;">
+            <p style="font-size:16px; line-height:1.6; margin:0 0 15px;">
+                Dear Service Provider,
+            </p>
+            <p style="font-size:16px; line-height:1.6; margin:0 0 20px;">
+                Welcome to <strong>NukkadSeva</strong>! Before you begin, please verify your email address to complete your registration.
+            </p>
+
+            <div style="text-align:center; margin:25px 0;">
+                <a href="{{verificationLink}}" style="display:inline-block; padding:12px 28px; font-size:16px; font-weight:bold; text-decoration:none; background:#7b5e3b; color:#fff; border-radius:30px; box-shadow:0 3px 6px rgba(0,0,0,0.2);">
+                    ✔ Verify Email
+                </a>
+            </div>
+
+            <p style="font-size:14px; color:#5c4433; line-height:1.6; margin:20px 0;">
+                Or copy & paste this link into your browser:<br>
+                <a href="{{verificationLink}}" style="color:#8a6e4b;">{{verificationLink}}</a>
+            </p>
+
+            <p style="font-size:14px; margin:20px 0 0; color:#7a6a57;">
+                ⌛ This link will remain valid for <strong>24 hours</strong>.
+            </p>
+        </td>
+    </tr>
+
+    <!-- Footer -->
+    <tr>
+        <td style="padding:20px; text-align:center; background:linear-gradient(to right, #f8f4e9, #e9dcc6); border-top:1px solid #d9c8a9; font-size:13px; color:#6d5d4a;">
+            <p style="margin:0;">If you did not register, please disregard this email.</p>
+            <p style="margin:8px 0 0; font-style:italic;">Warm regards,<br>Team NukkadSeva</p>
+        </td>
+    </tr>
+
+</table>
+
+</body>
+</html>

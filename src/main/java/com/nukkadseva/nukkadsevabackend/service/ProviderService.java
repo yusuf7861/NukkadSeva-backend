@@ -7,37 +7,48 @@ import com.nukkadseva.nukkadsevabackend.entity.enums.Role;
 import com.nukkadseva.nukkadsevabackend.repository.ProviderRepository;
 import com.nukkadseva.nukkadsevabackend.repository.UserRepository;
 import com.nukkadseva.nukkadsevabackend.services.AzureBlobStorageService;
-import org.springframework.beans.factory.annotation.Autowired;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+import jakarta.persistence.criteria.Predicate;
+import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+@RequiredArgsConstructor
 @Service
 public class ProviderService {
 
-    @Autowired
-    private ProviderRepository providerRepository;
+    private final ProviderRepository providerRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private JavaMailSender mailSender;
+    private final JavaMailSender mailSender;
 
-    @Autowired
-    private AzureBlobStorageService azureBlobStorageService;
+    private final AzureBlobStorageService azureBlobStorageService;
+
+    private final Configuration freemarkerConfiguration;
 
     private static final String CHAR_LOWER = "abcdefghijklmnopqrstuvwxyz";
     private static final String CHAR_UPPER = CHAR_LOWER.toUpperCase();
@@ -46,6 +57,7 @@ public class ProviderService {
     private static final String PASSWORD_CHARS = CHAR_LOWER + CHAR_UPPER + NUMBER + SPECIAL_CHARS;
     private static final SecureRandom random = new SecureRandom();
 
+    @Transactional
     public Provider registerProvider(ProviderDto providerDto) throws IOException {
         // Check for duplicate email
         if (providerRepository.findByEmail(providerDto.getEmail()).isPresent()) {
@@ -130,13 +142,12 @@ public class ProviderService {
 
         Provider provider = providerOpt.get();
 
-        // Check if token is expired
+        // Check if the token is expired
         if (provider.getTokenExpiresAt().isBefore(LocalDateTime.now())) {
             return false;
         }
 
-        // Update provider status
-        provider.setStatus("VERIFIED");
+        // Update only email verification status, keep the status as PENDING
         provider.setIsEmailVerified(true);
         provider.setVerificationToken(null); // Clear the token
         provider.setTokenExpiresAt(null);
@@ -160,37 +171,55 @@ public class ProviderService {
         return providerRepository.findByStatus(status);
     }
 
-    public Provider approveProvider(Long providerId) {
+    @Transactional
+    public Provider approveProvider(Long providerId) throws TemplateException, IOException {
         Provider provider = providerRepository.findById(providerId)
                 .orElseThrow(() -> new RuntimeException("Provider not found with id: " + providerId));
+
+        if (!"PENDING".equals(provider.getStatus())) {
+            throw new RuntimeException("Only pending providers can be approved");
+        }
+
+        if (!provider.getIsEmailVerified()) {
+            throw new RuntimeException("Provider email must be verified before approval");
+        }
+
         provider.setStatus("APPROVED");
+        provider.setIsApproved(true);
 
         // Generate a secure random password
-        String generatedPassword = generateSecurePassword(12);
+        String generatedPassword = generateSecurePassword();
 
-        // Create a corresponding User for the approved provider
+        // Create a corresponding User for the approved provider (owning side holds FK)
         Users user = new Users();
         user.setEmail(provider.getEmail());
         user.setPassword(passwordEncoder.encode(generatedPassword));
         user.setRole(Role.SERVICE_PROVIDER);
         user.setVerified(true);
-        userRepository.save(user);
 
+        user.setProvider(provider);
         provider.setUser(user);
+
+        userRepository.save(user);
         Provider savedProvider = providerRepository.save(provider);
 
-        // Send email with login credentials
         sendProviderApprovalEmail(provider.getEmail(), generatedPassword);
 
         return savedProvider;
     }
 
-    public Provider rejectProvider(Long providerId) {
+    public Provider rejectProvider(Long providerId, String reason) throws TemplateException, IOException {
         Provider provider = providerRepository.findById(providerId)
                 .orElseThrow(() -> new RuntimeException("Provider not found with id: " + providerId));
-        provider.setStatus("REJECTED");
 
-        sendProviderRejectionEmail(provider.getEmail());
+        if (!"PENDING".equals(provider.getStatus())) {
+            throw new RuntimeException("Only pending providers can be rejected");
+        }
+
+        provider.setStatus("REJECTED");
+        provider.setRejectionReason(reason);
+
+        sendProviderRejectionEmail(provider.getEmail(), reason);
 
         return providerRepository.save(provider);
     }
@@ -200,10 +229,10 @@ public class ProviderService {
     }
 
     /**
-     * Generates a secure random password with specified length
+     * Generates a secure random password with a specified length
      */
-    private String generateSecurePassword(int length) {
-        StringBuilder password = new StringBuilder(length);
+    private String generateSecurePassword() {
+        StringBuilder password = new StringBuilder(12);
 
         // Ensure at least one of each character type
         password.append(CHAR_LOWER.charAt(random.nextInt(CHAR_LOWER.length())));
@@ -212,7 +241,7 @@ public class ProviderService {
         password.append(SPECIAL_CHARS.charAt(random.nextInt(SPECIAL_CHARS.length())));
 
         // Fill the rest of the password with random characters
-        for (int i = 4; i < length; i++) {
+        for (int i = 4; i < 12; i++) {
             password.append(PASSWORD_CHARS.charAt(random.nextInt(PASSWORD_CHARS.length())));
         }
 
@@ -228,27 +257,62 @@ public class ProviderService {
         return new String(passwordArray);
     }
 
+    public Page<Provider> searchProviders(String category, String city, String pincode, int page, int limit) {
+        // Validate page and limit parameters
+        if (page < 1) {
+            throw new IllegalArgumentException("Page number must be at least 1.");
+        }
+        if (limit < 1 || limit > 100) {
+            throw new IllegalArgumentException("Limit must be between 1 and 100.");
+        }
+        Pageable pageable = PageRequest.of(page - 1, limit);
+
+        Specification<Provider> spec = (root, criteriaQuery, criteriaBuilder) -> {
+            Predicate predicate = criteriaBuilder.conjunction();
+
+            if (category != null && !category.isEmpty()) {
+                predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("serviceCategory"), category));
+            }
+            
+            if (city != null && !city.isEmpty()) {
+                predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("city"), city));
+            }
+            if (pincode != null && !pincode.isEmpty()) {
+                predicate = criteriaBuilder.and(predicate, criteriaBuilder.like(root.get("serviceArea"), pincode + "%"));
+            }
+
+            return predicate;
+        };
+
+        return providerRepository.findAll(spec, pageable);
+    }
+
     /**
      * Sends an email to the provider with their login credentials
      */
-    private void sendProviderApprovalEmail(String email, String password) {
+    private void sendProviderApprovalEmail(String email, String password) throws IOException, TemplateException {
         try {
+
+            Map<String, Object> model = new HashMap<>();
+            model.put("email", email);
+            model.put("password", password);
+            Template template;
+
+            template = freemarkerConfiguration.getTemplate("provider-approval.html");
+
+            StringWriter stringWriter = new StringWriter();
+            template.process(model, stringWriter);
+            String htmlContent = stringWriter.toString();
+
+
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
             helper.setTo(email);
             helper.setSubject("NukkadSeva Provider Account Approved");
-
-            String emailContent =
-                "<h2>Welcome to NukkadSeva!</h2>" +
-                "<p>Your provider account has been approved. You can now login using the credentials below:</p>" +
-                "<p><strong>Email:</strong> " + email + "</p>" +
-                "<p><strong>Password:</strong> " + password + "</p>" +
-                "<p>Please change your password after your first login.</p>" +
-                "<p>Thank you for joining NukkadSeva!</p>";
-
-            helper.setText(emailContent, true);
+            helper.setText(htmlContent, true);
             mailSender.send(message);
+
 
         } catch (MessagingException e) {
             System.err.println("Failed to send approval email: " + e.getMessage());
@@ -258,21 +322,28 @@ public class ProviderService {
     /**
      * Sends a rejection notification email to the provider
      */
-    private void sendProviderRejectionEmail(String email) {
+    private void sendProviderRejectionEmail(String email, String reason) throws IOException, TemplateException {
         try {
+
+            Map<String, Object> model = new HashMap<>();
+            model.put("email", email);
+            model.put("reason", reason);
+            Template template;
+
+            template = freemarkerConfiguration.getTemplate("provider-rejection.html");
+
+            StringWriter stringWriter = new StringWriter();
+            template.process(model, stringWriter);
+            String htmlContent = stringWriter.toString();
+
+
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
             helper.setTo(email);
             helper.setSubject("NukkadSeva Provider Application Status");
 
-            String emailContent =
-                "<h2>NukkadSeva Provider Application</h2>" +
-                "<p>We regret to inform you that your application to become a service provider on NukkadSeva has not been approved at this time.</p>" +
-                "<p>If you believe there has been an error or would like more information, please contact our support team.</p>" +
-                "<p>Thank you for your interest in NukkadSeva.</p>";
-
-            helper.setText(emailContent, true);
+            helper.setText(htmlContent, true);
             mailSender.send(message);
 
         } catch (MessagingException e) {
@@ -291,15 +362,9 @@ public class ProviderService {
             helper.setTo(email);
             helper.setSubject("NukkadSeva Provider Email Verification");
 
-            String verificationLink = "https://your-frontend-url/verify-email?token=" + token + "&id=" + providerId;
-
-            String emailContent =
-                "<h2>NukkadSeva Email Verification</h2>" +
-                "<p>Thank you for registering as a service provider on NukkadSeva.</p>" +
-                "<p>Please verify your email by clicking the link below:</p>" +
-                "<p><a href=\"" + verificationLink + "\">Verify Email</a></p>" +
-                "<p>This link will expire in 24 hours.</p>" +
-                "<p>If you did not register, please ignore this email.</p>";
+            // Use localhost for local development, can be configured for production
+            String baseUrl = "http://localhost:9002"; // Frontend URL for local development
+            String emailContent = getString(token, providerId, baseUrl);
 
             helper.setText(emailContent, true);
             mailSender.send(message);
@@ -307,6 +372,22 @@ public class ProviderService {
         } catch (MessagingException e) {
             System.err.println("Failed to send verification email: " + e.getMessage());
         }
+    }
+
+    @NotNull
+    private static String getString(String token, Long providerId, String baseUrl) {
+        String verificationLink = baseUrl + "/verify-email?token=" + token + "&id=" + providerId;
+
+        String emailContent =
+            "<h2>NukkadSeva Email Verification</h2>" +
+            "<p>Thank you for registering as a service provider on NukkadSeva.</p>" +
+            "<p>Please verify your email by clicking the link below:</p>" +
+            "<p><a href=\"" + verificationLink + "\" style=\"background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;\">Verify Email</a></p>" +
+            "<p>Or copy and paste this link in your browser:</p>" +
+            "<p>" + verificationLink + "</p>" +
+            "<p>This link will expire in 24 hours.</p>" +
+            "<p>If you did not register, please ignore this email.</p>";
+        return emailContent;
     }
 
     /**

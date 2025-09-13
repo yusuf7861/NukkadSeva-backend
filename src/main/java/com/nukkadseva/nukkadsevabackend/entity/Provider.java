@@ -116,4 +116,7 @@ public class Provider {
 
     @Column(name = "token_expires_at")
     private LocalDateTime tokenExpiresAt;
+
+    @Column(name = "rejection_reason", length = 1000)
+    private String rejectionReason;
 }

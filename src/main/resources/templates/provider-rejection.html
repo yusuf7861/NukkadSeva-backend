@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
-    <title>OTP Verification</title>
+    <title>NukkadSeva Provider Application</title>
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -13,11 +13,11 @@
         }
         .container {
             background: #fff;
-            max-width: 500px;
+            max-width: 550px;
             margin: 40px auto;
             border-radius: 12px;
             box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-            padding: 32px 36px 24px 36px;
+            padding: 32px 36px 28px 36px;
         }
         .logo {
             display: block;
@@ -25,32 +25,31 @@
             width: 120px;
         }
         h2 {
-            color: #1a73e8;
-            margin-bottom: 8px;
-            text-align: center;
+            color: #e53935;
+            margin-bottom: 12px;
         }
-        .otp-code {
-            font-size: 24px;
-            font-weight: bold;
-            color: #333333;
-            margin: 20px 0;
-            padding: 10px;
-            background-color: #f0f0f0;
-            border-radius: 4px;
-            display: inline-block;
+        .reason-box {
+            background: #fff3f2;
+            border-left: 5px solid #e53935;
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin: 18px 0;
+            color: #b71c1c;
+            font-size: 1.05em;
         }
         .note {
-            color: #e67e22;
-            font-size: 0.98em;
+            background: #f1f6fb;
+            padding: 14px 18px;
+            border-radius: 8px;
+            font-size: 0.97em;
             margin-bottom: 18px;
         }
         .footer {
             margin-top: 32px;
             border-top: 1px solid #eaeaea;
             padding-top: 18px;
-            font-size: 0.97em;
+            font-size: 0.95em;
             color: #555;
-            text-align: center;
         }
         .signature {
             margin-top: 24px;
@@ -64,26 +63,35 @@
         }
         .contact {
             color: #888;
-            font-size: 0.97em;
+            font-size: 0.95em;
         }
     </style>
 </head>
 <body>
 <div class="container">
-<!--    <img class="logo" src="https://i.postimg.cc/SKPLZjXb/loh.png" alt="NukkadSeva Logo">-->
-    <h2>OTP Verification</h2>
-    <p>Hello, <span th:text="${email}">${email}</span></p>
-    <p>Thank you for registering with NukkadSeva. Please use the following One-Time Password (OTP) to verify your account:</p>
-    <div class="otp-code" th:text="${otp}">${otp}</div>
-    <div class="note">
-        <strong>Note:</strong> This OTP is valid for 10 minutes. If you did not request this, please ignore this email.
+    <img class="logo" src="https://i.postimg.cc/SKPLZjXb/loh.png" alt="NukkadSeva Logo">
+    <h2>NukkadSeva Provider Application</h2>
+    <p>Dear Applicant, <span th:text="${email}">${email}</span></p>
+    <p>We regret to inform you that your application to become a service provider on <strong>NukkadSeva</strong> has not been approved at this time.</p>
+
+    <div class="reason-box">
+        <strong>Reason for rejection:</strong><br>
+        <span th:text="${reason}">${reason}</span>
     </div>
+
+    <div class="note">
+        If you believe there has been an error or would like more information, please reach out to our support team.<br>
+        We value your interest in <strong>NukkadSeva</strong> and encourage you to apply again in the future.
+    </div>
+
+    <p>Thank you once again for considering partnering with us.</p>
+
     <div class="footer">
         <div class="signature">Yusuf Jamal</div>
         <div class="founder">Founder &amp; CEO</div>
+        <div class="founder">B.Tech(CSE) Undergrad Final Year Student</div>
         <div class="contact">Email: <a href="mailto:yjamal710@gmail.com">yjamal710@gmail.com</a></div>
         <div style="margin-top:10px; color:#1a73e8; font-weight:bold;">Empowering Local Services, One Click at a Time!</div>
-        <div style="margin-top:10px; color:#888;">&copy; 2024 NukkadSeva. All rights reserved.</div>
     </div>
 </div>
 </body>
