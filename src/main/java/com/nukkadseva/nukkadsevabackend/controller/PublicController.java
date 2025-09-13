@@ -33,12 +33,17 @@ public class PublicController {
     ) {
         Page<Provider> providerPage = providerService.searchProviders(category, city, pincode, page, limit);
 
+        // Filter providers to only include those with "approved" status
+        List<Provider> approvedProviders = providerPage.getContent().stream()
+                .filter(provider -> "approved".equalsIgnoreCase(provider.getStatus()))
+                .collect(Collectors.toList());
+
         Map<String, Object> response = new HashMap<>();
-        response.put("providers", providerPage.getContent());
+        response.put("providers", approvedProviders);
         response.put("pagination", Map.of(
                 "currentPage", providerPage.getNumber() + 1,
                 "totalPages", providerPage.getTotalPages(),
-                "totalItems", providerPage.getTotalElements()
+                "totalItems", approvedProviders.size()
         ));
 
         return ResponseEntity.ok(response);
