@@ -1,6 +1,7 @@
-package com.nukkadseva.nukkadsevabackend.services.impl;
+package com.nukkadseva.nukkadsevabackend.util;
 
-import com.nukkadseva.nukkadsevabackend.services.AzureBlobStorageService;
+import com.nukkadseva.nukkadsevabackend.service.AzureBlobStorageService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,13 +13,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @ConditionalOnProperty(name = "storage.type", havingValue = "local", matchIfMissing = true)
-public class LocalFileStorageServiceImpl implements AzureBlobStorageService {
+public class LocalFileStorageService implements AzureBlobStorageService {
 
     private final String uploadDir;
 
-    public LocalFileStorageServiceImpl() {
+    public LocalFileStorageService() {
         // Use absolute path based on current working directory
         this.uploadDir = System.getProperty("user.dir") + File.separator + "uploads";
 
@@ -27,10 +29,10 @@ public class LocalFileStorageServiceImpl implements AzureBlobStorageService {
             Path uploadPath = Paths.get(uploadDir);
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
-                System.out.println("Created upload directory: " + uploadPath.toAbsolutePath());
+                log.info("Created upload directory: {}", uploadPath.toAbsolutePath());
             }
         } catch (IOException e) {
-            System.err.println("Could not create upload directory: " + e.getMessage());
+            log.error("Could not create upload directory: {}", e.getMessage());
             throw new RuntimeException("Could not create upload directory", e);
         }
     }
@@ -53,20 +55,20 @@ public class LocalFileStorageServiceImpl implements AzureBlobStorageService {
             Path typeDir = Paths.get(uploadDir, type);
             if (!Files.exists(typeDir)) {
                 Files.createDirectories(typeDir);
-                System.out.println("Created subdirectory: " + typeDir.toAbsolutePath());
+                log.info("Created subdirectory: {}", typeDir.toAbsolutePath());
             }
 
             // Save the file
             Path filePath = typeDir.resolve(fileName);
             file.transferTo(filePath.toFile());
 
-            System.out.println("File saved successfully: " + filePath.toAbsolutePath());
+            log.info("File saved successfully: {}", filePath.toAbsolutePath());
 
             // Return a local URL (you can modify this to match your needs)
             return "/uploads/" + type + "/" + fileName;
 
         } catch (IOException e) {
-            System.err.println("Failed to store file: " + e.getMessage());
+            log.error("Failed to store file: {}", e.getMessage());
             e.printStackTrace();
             throw new RuntimeException("Failed to store file locally: " + e.getMessage(), e);
         }

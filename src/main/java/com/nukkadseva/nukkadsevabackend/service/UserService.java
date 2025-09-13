@@ -1,4 +1,4 @@
-package com.nukkadseva.nukkadsevabackend.service.userservice;
+package com.nukkadseva.nukkadsevabackend.service;
 
 import java.io.IOException;
 

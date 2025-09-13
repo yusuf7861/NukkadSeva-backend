@@ -37,6 +37,6 @@ out/
 .vscode/
 
 ### Enviroment variables ###
-src/main/resources/.env
+.env
 
 uploads

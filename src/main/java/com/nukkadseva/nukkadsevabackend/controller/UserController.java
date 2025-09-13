@@ -28,7 +28,7 @@ import com.nukkadseva.nukkadsevabackend.dto.request.VerifyOtpRequest;
 import com.nukkadseva.nukkadsevabackend.dto.response.AuthResponse;
 import com.nukkadseva.nukkadsevabackend.dto.response.OtpTokenResponse;
 import com.nukkadseva.nukkadsevabackend.exception.InvalidOtpException;
-import com.nukkadseva.nukkadsevabackend.service.userservice.UserService;
+import com.nukkadseva.nukkadsevabackend.service.UserService;
 
 import freemarker.template.TemplateException;
 import jakarta.mail.MessagingException;

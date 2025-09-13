@@ -1,8 +1,7 @@
-package com.nukkadseva.nukkadsevabackend.services.impl;
+package com.nukkadseva.nukkadsevabackend.util;
 
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
-import com.nukkadseva.nukkadsevabackend.services.AzureBlobStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
@@ -13,7 +12,7 @@ import java.util.UUID;
 
 @Service
 @ConditionalOnProperty(name = "storage.type", havingValue = "azure")
-public class AzureBlobStorageServiceImpl implements AzureBlobStorageService {
+public class AzureBlobStorageService implements com.nukkadseva.nukkadsevabackend.service.AzureBlobStorageService {
 
     @Autowired
     private BlobContainerClient blobContainerClient;
