@@ -356,7 +356,7 @@ public class ProviderServiceImpl implements ProviderService{
             mailSender.send(message);
 
         } catch (MessagingException e) {
-            System.err.println("Failed to send rejection email: " + e.getMessage());
+            log.error("Failed to send rejection email: {}", e.getMessage());
         }
     }
 
