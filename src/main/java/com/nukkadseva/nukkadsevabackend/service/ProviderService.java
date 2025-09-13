@@ -271,7 +271,7 @@ public class ProviderService {
                 predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("city"), city));
             }
             if (pincode != null && !pincode.isEmpty()) {
-                predicate = criteriaBuilder.and(predicate, criteriaBuilder.like(root.get("serviceArea"), "%" + pincode + "%"));
+                predicate = criteriaBuilder.and(predicate, criteriaBuilder.like(root.get("serviceArea"), pincode + "%"));
             }
 
             return predicate;
