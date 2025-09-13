@@ -16,7 +16,7 @@ public class MailConfig {
         mailSender.setHost("smtp.gmail.com");
         mailSender.setPort(587);
         mailSender.setUsername("yjamal710@gmail.com");
-        mailSender.setPassword("mtkx tvqg sosg rynn"); //TODO: use environment variables
+        mailSender.setPassword("raju vysl sfee aoxu"); //TODO: use environment variables
 
         Properties props = new Properties();
         props.put("mail.transport.protocol", "smtp");

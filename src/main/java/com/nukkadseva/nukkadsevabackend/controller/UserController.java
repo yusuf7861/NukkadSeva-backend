@@ -1,5 +1,27 @@
 package com.nukkadseva.nukkadsevabackend.controller;
 
+import java.io.IOException;
+import java.security.Principal;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.nukkadseva.nukkadsevabackend.dto.request.CustomerProfileUpdateRequest;
+import com.nukkadseva.nukkadsevabackend.entity.Customers;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.nukkadseva.nukkadsevabackend.dto.ApiResponse;
 import com.nukkadseva.nukkadsevabackend.dto.request.UserRequest;
 import com.nukkadseva.nukkadsevabackend.dto.request.VerifyOtpRequest;
@@ -7,22 +29,12 @@ import com.nukkadseva.nukkadsevabackend.dto.response.AuthResponse;
 import com.nukkadseva.nukkadsevabackend.dto.response.OtpTokenResponse;
 import com.nukkadseva.nukkadsevabackend.exception.InvalidOtpException;
 import com.nukkadseva.nukkadsevabackend.service.userservice.UserService;
+
 import freemarker.template.TemplateException;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
-
-import java.io.IOException;
-import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -96,9 +108,14 @@ public class UserController {
                 .body(response);
     }
 
+    @GetMapping("/customer/profile")
+    public ResponseEntity<Customers> getCustomerProfile(Principal principal) {
+        return ResponseEntity.ok(userService.getCustomerProfile(principal.getName()));
+    }
 
-    @GetMapping
-    public String welcom() {
-        return "Welcome to Nukkadseva";
+    @PutMapping("/customer/profile")
+    public ResponseEntity<?> updateCustomerProfile(@RequestBody CustomerProfileUpdateRequest request, Principal principal) {
+        userService.updateCustomerProfile(request, principal.getName());
+        return ResponseEntity.ok(Map.of("message", "Profile updated successfully"));
     }
 }

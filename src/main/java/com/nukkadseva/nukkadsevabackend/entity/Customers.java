@@ -1,10 +1,12 @@
 package com.nukkadseva.nukkadsevabackend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -13,6 +15,7 @@ import org.hibernate.type.SqlTypes;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
+@DynamicUpdate
 @Table(name = "customers")
 public class Customers {
     @Id
@@ -43,5 +46,6 @@ public class Customers {
 
     // Inverse side of Users.customers association (Users owns FK via customer_id)
     @OneToOne(mappedBy = "customers")
+    @JsonIgnore
     private Users user;
 }

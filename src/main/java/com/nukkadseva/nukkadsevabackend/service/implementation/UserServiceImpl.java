@@ -1,30 +1,14 @@
 package com.nukkadseva.nukkadsevabackend.service.implementation;
 
-import com.nukkadseva.nukkadsevabackend.dto.request.UserRequest;
-import com.nukkadseva.nukkadsevabackend.dto.request.VerifyOtpRequest;
-import com.nukkadseva.nukkadsevabackend.dto.response.AuthResponse;
-import com.nukkadseva.nukkadsevabackend.entity.Users;
-import com.nukkadseva.nukkadsevabackend.entity.Customers;
-import com.nukkadseva.nukkadsevabackend.entity.enums.Role;
-import com.nukkadseva.nukkadsevabackend.exception.EmailAlreadyExistsException;
-import com.nukkadseva.nukkadsevabackend.exception.InvalidOtpException;
-import com.nukkadseva.nukkadsevabackend.exception.UserAuthenticationException;
-import com.nukkadseva.nukkadsevabackend.jwt.JwtOtpUtil;
-import com.nukkadseva.nukkadsevabackend.jwt.JwtUtil;
-import com.nukkadseva.nukkadsevabackend.repository.UserRepository;
-import com.nukkadseva.nukkadsevabackend.repository.CustomerRepository;
-import com.nukkadseva.nukkadsevabackend.service.userservice.AppUserDetailsService;
-import com.nukkadseva.nukkadsevabackend.service.userservice.UserService;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseCookie;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.security.SecureRandom;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+import com.nukkadseva.nukkadsevabackend.dto.request.CustomerProfileUpdateRequest;
+import com.nukkadseva.nukkadsevabackend.entity.Address;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -36,13 +20,30 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.security.SecureRandom;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
+import com.nukkadseva.nukkadsevabackend.dto.request.UserRequest;
+import com.nukkadseva.nukkadsevabackend.dto.request.VerifyOtpRequest;
+import com.nukkadseva.nukkadsevabackend.entity.Customers;
+import com.nukkadseva.nukkadsevabackend.entity.Users;
+import com.nukkadseva.nukkadsevabackend.entity.enums.Role;
+import com.nukkadseva.nukkadsevabackend.exception.EmailAlreadyExistsException;
+import com.nukkadseva.nukkadsevabackend.exception.InvalidOtpException;
+import com.nukkadseva.nukkadsevabackend.exception.UserAuthenticationException;
+import com.nukkadseva.nukkadsevabackend.jwt.JwtOtpUtil;
+import com.nukkadseva.nukkadsevabackend.jwt.JwtUtil;
+import com.nukkadseva.nukkadsevabackend.repository.CustomerRepository;
+import com.nukkadseva.nukkadsevabackend.repository.UserRepository;
+import com.nukkadseva.nukkadsevabackend.service.userservice.AppUserDetailsService;
+import com.nukkadseva.nukkadsevabackend.service.userservice.UserService;
+
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -57,6 +58,59 @@ public class UserServiceImpl implements UserService {
     private final JwtOtpUtil jwtOtpUtil;
     private final JavaMailSender javaMailSender;
     private final Configuration freemarkerConfig;
+
+    @Override
+    @Transactional
+    public Customers updateCustomerProfile(CustomerProfileUpdateRequest request, String email) {
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+        
+        Customers customer = user.getCustomers();
+        if (customer == null) {
+            throw new UsernameNotFoundException("Customer profile not found for user: " + email);
+        }
+
+        if (request.getName() != null) {
+            customer.setFullName(request.getName());
+        }
+        if (request.getPhone() != null) {
+            customer.setMobileNumber(request.getPhone());
+        }
+        customer.setEmail(user.getEmail());
+
+        if (request.getFullAddress() != null || 
+            request.getCity() != null || 
+            request.getState() != null || 
+            request.getPincode() != null) {
+            
+            Address address = customer.getAddress();
+            if (address == null) {
+                address = new Address();
+                customer.setAddress(address);
+            }
+            
+            if (request.getFullAddress() != null) {
+                address.setFullAddress(request.getFullAddress());
+            }
+            if (request.getCity() != null) {
+                address.setCity(request.getCity());
+            }
+            if (request.getState() != null) {
+                address.setState(request.getState());
+            }
+            if (request.getPincode() != null) {
+                address.setPincode(request.getPincode());
+            }
+        }
+
+        return customerRepository.save(customer);
+    }
+
+    @Override
+    public Customers getCustomerProfile(String email) {
+        return customerRepository.findByEmail(email);
+    }
+
 
     @Override
     @Transactional

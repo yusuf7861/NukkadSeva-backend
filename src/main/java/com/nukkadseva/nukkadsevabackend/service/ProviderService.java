@@ -57,6 +57,7 @@ public class ProviderService {
     private static final String PASSWORD_CHARS = CHAR_LOWER + CHAR_UPPER + NUMBER + SPECIAL_CHARS;
     private static final SecureRandom random = new SecureRandom();
 
+    @Transactional
     public Provider registerProvider(ProviderDto providerDto) throws IOException {
         // Check for duplicate email
         if (providerRepository.findByEmail(providerDto.getEmail()).isPresent()) {
