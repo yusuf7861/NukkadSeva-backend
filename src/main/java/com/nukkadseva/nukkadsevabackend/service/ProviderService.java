@@ -258,6 +258,13 @@ public class ProviderService {
     }
 
     public Page<Provider> searchProviders(String category, String city, String pincode, int page, int limit) {
+        // Validate page and limit parameters
+        if (page < 1) {
+            throw new IllegalArgumentException("Page number must be at least 1.");
+        }
+        if (limit < 1 || limit > 100) {
+            throw new IllegalArgumentException("Limit must be between 1 and 100.");
+        }
         Pageable pageable = PageRequest.of(page - 1, limit);
 
         Specification<Provider> spec = (root, criteriaQuery, criteriaBuilder) -> {
