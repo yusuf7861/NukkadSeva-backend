@@ -1,4 +1,4 @@
-package com.nukkadseva.nukkadsevabackend.services;
+package com.nukkadseva.nukkadsevabackend.service;
 
 import org.springframework.web.multipart.MultipartFile;
 

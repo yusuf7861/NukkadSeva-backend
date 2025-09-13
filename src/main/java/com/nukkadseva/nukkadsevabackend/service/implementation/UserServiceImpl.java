@@ -32,8 +32,8 @@ import com.nukkadseva.nukkadsevabackend.jwt.JwtOtpUtil;
 import com.nukkadseva.nukkadsevabackend.jwt.JwtUtil;
 import com.nukkadseva.nukkadsevabackend.repository.CustomerRepository;
 import com.nukkadseva.nukkadsevabackend.repository.UserRepository;
-import com.nukkadseva.nukkadsevabackend.service.userservice.AppUserDetailsService;
-import com.nukkadseva.nukkadsevabackend.service.userservice.UserService;
+import com.nukkadseva.nukkadsevabackend.service.AppUserDetailsService;
+import com.nukkadseva.nukkadsevabackend.service.UserService;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;

@@ -6,9 +6,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -32,20 +37,26 @@ public class Customers {
     @Column(name = "email", unique = true)
     private String email;
 
-    // Store as PostgreSQL bytea, not OID/large object
-    @JdbcTypeCode(SqlTypes.BINARY)
     @Column(name = "photograph")
-    private byte[] photograph;
-
-    @Column(name = "photograph_content_type")
-    private String photographContentType;
+    private String photograph;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id", referencedColumnName = "address_id")
     private Address address;
 
-    // Inverse side of Users.customers association (Users owns FK via customer_id)
     @OneToOne(mappedBy = "customers")
     @JsonIgnore
     private Users user;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Review> reviews;
 }
