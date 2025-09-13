@@ -125,16 +125,15 @@ public class UserServiceImpl implements UserService {
         users.setPassword(passwordEncoder.encode(userRequest.getPassword()));
         users.setRole(Role.CUSTOMER);
 
-        // Create and persist a Customers profile first to ensure ID is generated
+        // Create a Customers profile and set up associations
         Customers customer = new Customers();
         customer.setEmail(userRequest.getEmail());
-        Customers savedCustomer = customerRepository.save(customer);
 
         // Link both sides of association; Users owns the FK (customer_id)
-        users.setCustomers(savedCustomer);
-        savedCustomer.setUser(users);
+        users.setCustomers(customer);
+        customer.setUser(users);
 
-        // Save owning side (Users) so the customer_id FK is persisted
+        // Save owning side (Users); cascading will persist Customers as well
         userRepository.save(users);
     }
 
