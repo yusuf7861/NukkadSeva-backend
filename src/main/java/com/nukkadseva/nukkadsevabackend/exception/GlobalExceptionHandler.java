@@ -43,7 +43,7 @@ public class GlobalExceptionHandler {
     // define all methods above 👆👆👆👆
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGeneralException(Exception e) {
-        return buildErrorResponse("INTERNAL_SERVER_ERROR", "Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+        return buildErrorResponse("INTERNAL_SERVER_ERROR", e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     private ResponseEntity<ApiError> buildErrorResponse(String code, String message, HttpStatus status) {

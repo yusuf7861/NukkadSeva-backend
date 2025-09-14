@@ -94,7 +94,7 @@ public class UserServiceImpl implements UserService {
         Map<String, Object> model = new HashMap<>();
         model.put("email", email);
         model.put("otp", resetOtp);
-        Template template = null;
+        Template template;
 
         template = freemarkerConfig.getTemplate("user-verification-otp.html");
 
@@ -106,7 +106,7 @@ public class UserServiceImpl implements UserService {
 
         MimeMessage message = javaMailSender.createMimeMessage();
 
-        MimeMessageHelper helper = null;
+        MimeMessageHelper helper;
 
         helper = new MimeMessageHelper(message, true);
         helper.setTo(email);
