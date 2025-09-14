@@ -11,12 +11,8 @@ import freemarker.template.TemplateException;
 import jakarta.mail.MessagingException;
 
 public interface UserService {
-    void customerRegistration(UserRequest userRequest);
     String login(UserRequest userRequest);
     String sendVerificationOtp(String email) throws MessagingException, IOException, TemplateException;
     boolean verifyOtp(VerifyOtpRequest request);
-    Customers updateCustomerProfile(CustomerProfileUpdateRequest request, String email);
-
-    Customers getCustomerProfile(String name);
 
 }

@@ -1,6 +1,6 @@
 package com.nukkadseva.nukkadsevabackend.jwt;
 
-import com.nukkadseva.nukkadsevabackend.service.AppUserDetailsService;
+import com.nukkadseva.nukkadsevabackend.util.AppUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;

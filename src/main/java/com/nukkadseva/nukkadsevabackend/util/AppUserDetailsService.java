@@ -1,4 +1,4 @@
-package com.nukkadseva.nukkadsevabackend.service;
+package com.nukkadseva.nukkadsevabackend.util;
 
 import com.nukkadseva.nukkadsevabackend.entity.Users;
 import com.nukkadseva.nukkadsevabackend.entity.enums.Role;
@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 public class AppUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
-
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {

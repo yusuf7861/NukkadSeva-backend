@@ -41,22 +41,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @CrossOrigin("/**")
 public class UserController {
-    private final UserService userService;
-
-    @PostMapping("/customer/register")
-    public ResponseEntity<Map<String, Object>> customerRegistration(@Valid @RequestBody UserRequest userRequest) {
-        userService.customerRegistration(userRequest);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("httpStatusCode", HttpStatus.CREATED.value());
-        response.put("message", "User registered successfully.");
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
+    private final UserService customerService;
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody UserRequest userRequest, HttpServletResponse response) {
-        String token = userService.login(userRequest);
+        String token = customerService.login(userRequest);
 
         ResponseCookie cookie = ResponseCookie.from("jwt", token)
                 .httpOnly(true)
@@ -73,13 +62,13 @@ public class UserController {
 
     @PostMapping("/send-verification-otp")
     public ResponseEntity<OtpTokenResponse> sendVerificationOtp(@RequestParam String email) throws MessagingException, TemplateException, IOException {
-        String token = userService.sendVerificationOtp(email);
+        String token = customerService.sendVerificationOtp(email);
         return ResponseEntity.ok(new OtpTokenResponse("OTP_SENT", "OTP sent successfully.", token));
     }
 
     @PostMapping("/verify-otp")
     public ResponseEntity<ApiResponse> verifyOtp(@RequestBody @Valid VerifyOtpRequest request) {
-        boolean verified = userService.verifyOtp(request);
+        boolean verified = customerService.verifyOtp(request);
         if (verified) {
             return ResponseEntity.ok(new ApiResponse("OTP_VERIFIED", "OTP verified successfully."));
         } else {
@@ -108,14 +97,4 @@ public class UserController {
                 .body(response);
     }
 
-    @GetMapping("/customer/profile")
-    public ResponseEntity<Customers> getCustomerProfile(Principal principal) {
-        return ResponseEntity.ok(userService.getCustomerProfile(principal.getName()));
-    }
-
-    @PutMapping("/customer/profile")
-    public ResponseEntity<?> updateCustomerProfile(@RequestBody CustomerProfileUpdateRequest request, Principal principal) {
-        userService.updateCustomerProfile(request, principal.getName());
-        return ResponseEntity.ok(Map.of("message", "Profile updated successfully"));
-    }
 }
