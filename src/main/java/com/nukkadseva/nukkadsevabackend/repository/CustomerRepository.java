@@ -4,7 +4,10 @@ import com.nukkadseva.nukkadsevabackend.entity.Customers;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+import java.util.Optional;
+
 @Repository
 public interface CustomerRepository extends JpaRepository<Customers, Long> {
-    Customers findByEmail(String email);
+    Optional<Customers> findByEmail(String email);
 }

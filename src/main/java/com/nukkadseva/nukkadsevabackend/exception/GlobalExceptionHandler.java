@@ -24,6 +24,23 @@ public class GlobalExceptionHandler {
         return buildErrorResponse("INVALID_OTP", e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(FileNotFoundException.class)
+    public ResponseEntity<ApiError> handleFileNotFoundException(FileNotFoundException e) {
+        return buildErrorResponse("NOT_FOUND", e.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(FileSizeExceededException.class)
+    public ResponseEntity<ApiError> handleFileSizeException(FileSizeExceededException e) {
+        return buildErrorResponse("FILE_SIZE_EXCEEDED", e.getMessage(), HttpStatus.PAYLOAD_TOO_LARGE);
+    }
+
+    @ExceptionHandler(InvalidFileTypeException.class)
+    public ResponseEntity<ApiError> handleInvalidFileTypeException(FileNotFoundException e) {
+        return buildErrorResponse("INVALID_FILE_TYPE", e.getMessage(), HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+    }
+
+
+    // define all methods above 👆👆👆👆
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGeneralException(Exception e) {
         return buildErrorResponse("INTERNAL_SERVER_ERROR", "Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);

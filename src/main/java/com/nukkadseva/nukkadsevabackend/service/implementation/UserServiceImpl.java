@@ -7,13 +7,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import com.nukkadseva.nukkadsevabackend.entity.Customers;
+import com.nukkadseva.nukkadsevabackend.entity.Provider;
+import com.nukkadseva.nukkadsevabackend.repository.ProviderRepository;
+import com.nukkadseva.nukkadsevabackend.service.AzureBlobStorageService;
+import jakarta.transaction.Transactional;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.nukkadseva.nukkadsevabackend.dto.request.UserRequest;
@@ -38,6 +44,7 @@ import io.jsonwebtoken.MalformedJwtException;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -45,13 +52,14 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final CustomerRepository customerRepository;
-    private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final ProviderRepository providerRepository;
     private final AppUserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
     private final JwtOtpUtil jwtOtpUtil;
     private final JavaMailSender javaMailSender;
     private final Configuration freemarkerConfig;
+    private final AzureBlobStorageService azureBlobStorageService;
 
 
 
@@ -123,6 +131,38 @@ public class UserServiceImpl implements UserService {
             return true;
         } catch (ExpiredJwtException | MalformedJwtException jwtException) {
             throw new InvalidOtpException("OTP token is invalid or expired.");
+        }
+    }
+
+    @Transactional
+    @Override
+    public void updateProfilePicture(MultipartFile file, Authentication authentication) {
+        String email = authentication.getName();
+        String role = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No role assigned"));
+
+        switch (role) {
+            case "CUSTOMER":
+                Customers customer = customerRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Customer not found"));
+
+                String imageLink = azureBlobStorageService.uploadFile(file, "profilePictures");
+                customer.setPhotograph(imageLink);
+                customerRepository.save(customer);
+                break;
+
+            case "SERVICE_PROVIDER":
+                Provider provider = providerRepository.findByEmail(email)
+                        .orElseThrow(() -> new RuntimeException("Provider not found"));
+
+                String providerImageLink = azureBlobStorageService.uploadFile(file, "profilePictures");
+                provider.setPhotograph(providerImageLink);
+                providerRepository.save(provider);
+                break;
+
+            default:
+                throw new IllegalArgumentException("Unsupported role: " + role);
         }
     }
 }

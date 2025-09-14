@@ -73,7 +73,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public Customers getCustomerProfile(String email) {
-        return customerRepository.findByEmail(email);
+        return customerRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("Customer not found with email: " + email));
     }
 
 
