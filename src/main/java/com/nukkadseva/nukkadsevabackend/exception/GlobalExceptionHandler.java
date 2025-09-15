@@ -35,7 +35,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(InvalidFileTypeException.class)
-    public ResponseEntity<ApiError> handleInvalidFileTypeException(FileNotFoundException e) {
+    public ResponseEntity<ApiError> handleInvalidFileTypeException(InvalidFileTypeException e) {
         return buildErrorResponse("INVALID_FILE_TYPE", e.getMessage(), HttpStatus.UNSUPPORTED_MEDIA_TYPE);
     }
 
