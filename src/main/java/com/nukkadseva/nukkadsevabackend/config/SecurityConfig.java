@@ -1,6 +1,8 @@
 package com.nukkadseva.nukkadsevabackend.config;
 
-import com.nukkadseva.nukkadsevabackend.jwt.JwtAuthenticationFilter;
+import com.nukkadseva.nukkadsevabackend.security.CustomAccessDeniedHandler;
+import com.nukkadseva.nukkadsevabackend.security.CustomAuthenticationEntryPoint;
+import com.nukkadseva.nukkadsevabackend.security.JwtAuthenticationFilter;
 import com.nukkadseva.nukkadsevabackend.util.AppUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -33,16 +35,30 @@ public class SecurityConfig {
     private final AppUserDetailsService userDetailsService;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter, CustomAuthenticationEntryPoint entryPoint, CustomAccessDeniedHandler accessDeniedHandler) throws Exception {
         http
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(
                         authorize -> authorize
                                 .requestMatchers(
-                                        "/**"
+                                        // public endpoints
+                                        "/api/login",
+                                        "/api/customer/register",
+                                        "/api/provider/register",
+                                        "/api/public/**",
+                                        // Swagger endpoints
+                                        "/swagger-ui/**",
+                                        "/swagger-ui.html",
+                                        "/v3/api-docs/**",
+                                        "/v3/api-docs.yaml"
                                 ).permitAll()
                                 .anyRequest().authenticated()
+                )
+                .exceptionHandling(
+                        ex -> ex.
+                                authenticationEntryPoint(entryPoint)
+                                .accessDeniedHandler(accessDeniedHandler)
                 )
                 .sessionManagement(
                         session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -65,7 +81,11 @@ public class SecurityConfig {
 
     private UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5174", "http://localhost:5173", "http://localhost:9002", "http://6000-firebase-studio-1753892843304.cluster-ubrd2huk7jh6otbgyei4h62ope.cloudworkstations.dev"));
+        config.setAllowedOrigins(List.of(
+                "http://localhost:5174",
+                "http://localhost:5173",
+                "http://localhost:9002"
+                ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cookie"));
         config.setAllowCredentials(true);

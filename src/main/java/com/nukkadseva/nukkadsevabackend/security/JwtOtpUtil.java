@@ -1,4 +1,4 @@
-package com.nukkadseva.nukkadsevabackend.jwt;
+package com.nukkadseva.nukkadsevabackend.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

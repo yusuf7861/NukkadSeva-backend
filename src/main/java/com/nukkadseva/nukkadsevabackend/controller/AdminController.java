@@ -1,21 +1,25 @@
 package com.nukkadseva.nukkadsevabackend.controller;
 
+import com.nukkadseva.nukkadsevabackend.dto.response.ProviderSummaryDto;
 import com.nukkadseva.nukkadsevabackend.entity.Provider;
+import com.nukkadseva.nukkadsevabackend.entity.enums.ProviderStatus;
 import com.nukkadseva.nukkadsevabackend.service.ProviderService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
 
+@RequiredArgsConstructor
 @RestController
+@PreAuthorize("hasRole('ADMIN')")
 @RequestMapping("/api/admin")
 public class AdminController {
 
-    @Autowired
-    private ProviderService providerService;
+    private final ProviderService providerService;
 
     @GetMapping("/providers/pending")
     public ResponseEntity<List<Provider>> getPendingProviders() {
@@ -25,13 +29,13 @@ public class AdminController {
 
     @GetMapping("/providers/approved")
     public ResponseEntity<List<Provider>> getApprovedProviders() {
-        List<Provider> approvedProviders = providerService.getProvidersByStatus("APPROVED");
+        List<Provider> approvedProviders = providerService.getProvidersByStatus(ProviderStatus.APPROVED);
         return new ResponseEntity<>(approvedProviders, HttpStatus.OK);
     }
 
     @GetMapping("/providers/rejected")
     public ResponseEntity<List<Provider>> getRejectedProviders() {
-        List<Provider> rejectedProviders = providerService.getProvidersByStatus("REJECTED");
+        List<Provider> rejectedProviders = providerService.getProvidersByStatus(ProviderStatus.REJECTED);
         return new ResponseEntity<>(rejectedProviders, HttpStatus.OK);
     }
 
@@ -92,13 +96,9 @@ public class AdminController {
         }
     }
 
-//    @GetMapping("/providers/{id}")
-//    public ResponseEntity<?> getProviderDetails(@PathVariable Long id) {
-//        return providerService.getProviderById(id)
-//                .map(provider -> new ResponseEntity<>(provider, HttpStatus.OK))
-//                .orElse(new ResponseEntity<>(
-//                    Map.of("message", "Provider not found"),
-//                    HttpStatus.NOT_FOUND
-//                ));
-//    }
+    @GetMapping("/all-providers")
+    public ResponseEntity<List<ProviderSummaryDto>> getAllProvidersForAdmin() {
+        List<ProviderSummaryDto> allProvidersForAdmin = providerService.getAllProvidersForAdmin();
+        return ResponseEntity.ok(allProvidersForAdmin);
+    }
 }

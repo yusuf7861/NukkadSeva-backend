@@ -1,4 +1,4 @@
-package com.nukkadseva.nukkadsevabackend.jwt;
+package com.nukkadseva.nukkadsevabackend.security;
 
 import com.nukkadseva.nukkadsevabackend.util.AppUserDetailsService;
 import jakarta.servlet.FilterChain;

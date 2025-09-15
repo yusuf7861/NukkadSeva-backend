@@ -1,7 +1,9 @@
 package com.nukkadseva.nukkadsevabackend.service;
 
 import com.nukkadseva.nukkadsevabackend.dto.ProviderDto;
+import com.nukkadseva.nukkadsevabackend.dto.response.ProviderSummaryDto;
 import com.nukkadseva.nukkadsevabackend.entity.Provider;
+import com.nukkadseva.nukkadsevabackend.entity.enums.ProviderStatus;
 import freemarker.template.TemplateException;
 import org.springframework.data.domain.Page;
 
@@ -14,7 +16,7 @@ public interface ProviderService {
     boolean verifyProviderEmail(String token);
     List<Provider> getPendingProviders();
     List<Provider> getAllProviders();
-    List<Provider> getProvidersByStatus(String status);
+    List<Provider> getProvidersByStatus(ProviderStatus status);
     Provider approveProvider(Long providerId) throws TemplateException, IOException;
     Provider rejectProvider(Long providerId, String reason) throws TemplateException, IOException;
     Optional<Provider> getProviderById(Long id);
@@ -27,4 +29,6 @@ public interface ProviderService {
     void sendVerificationEmail(String email, String token, Long providerId);
 
     void notifyAdminsOfNewVerifiedProvider(Provider provider);
+    List<ProviderSummaryDto> getAllProvidersForAdmin();
+    ProviderDto getProviderByIdForAdmin(Long id);
 }

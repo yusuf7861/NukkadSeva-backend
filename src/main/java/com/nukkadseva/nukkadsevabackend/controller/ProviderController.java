@@ -8,6 +8,7 @@ import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -44,6 +45,7 @@ public class ProviderController {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/pending")
     public ResponseEntity<List<Provider>> getPendingProviders() {
         List<Provider> pendingProviders = providerService.getPendingProviders();
@@ -56,18 +58,21 @@ public class ProviderController {
         return new ResponseEntity<>(allProviders, HttpStatus.OK);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/approve")
     public ResponseEntity<Provider> approveProvider(@PathVariable Long id) throws MessagingException, TemplateException, IOException {
         Provider approvedProvider = providerService.approveProvider(id);
         return new ResponseEntity<>(approvedProvider, HttpStatus.OK);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/reject")
     public ResponseEntity<Provider> rejectProvider(@PathVariable Long id, @RequestParam String reason) throws TemplateException, IOException {
         Provider rejectedProvider = providerService.rejectProvider(id, reason);
         return new ResponseEntity<>(rejectedProvider, HttpStatus.OK);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<Provider> getProviderById(@PathVariable Long id) {
         return providerService.getProviderById(id)
@@ -75,6 +80,7 @@ public class ProviderController {
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
+    @PreAuthorize("hasRole('SERVICE_PROVIDER')")
     @PostMapping("/verify-email")
     public ResponseEntity<String> verifyProviderEmail(@RequestParam String token) {
         boolean verified = providerService.verifyProviderEmail(token);

@@ -35,7 +35,7 @@ public class RootAdminInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        boolean isRootAdminExists = userRepository.existsByRole(Role.ROOT_ADMIN);
+        boolean isRootAdminExists = userRepository.existsByRole(Role.ADMIN);
 
         if (isRootAdminExists) {
             log.info("Root Admin found. Skipping the creating part of Root Admin.");
@@ -46,7 +46,7 @@ public class RootAdminInitializer implements CommandLineRunner {
             Users rootAdmin = new Users();
             rootAdmin.setEmail("yjamal12feb@gmail.com");
             rootAdmin.setPassword(passwordEncoder.encode(password));
-            rootAdmin.setRole(Role.ROOT_ADMIN);
+            rootAdmin.setRole(Role.ADMIN);
             sendRootAdminCredentialsEmail(rootAdmin.getEmail(), rootAdmin.getEmail(), password);
 
             userRepository.save(rootAdmin);

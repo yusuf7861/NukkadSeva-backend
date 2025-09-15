@@ -1,5 +1,7 @@
 package com.nukkadseva.nukkadsevabackend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.nukkadseva.nukkadsevabackend.entity.enums.ProviderStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,6 +23,10 @@ public class Provider {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "provider_id", nullable = false)
     private Long id;
+
+    @OneToOne(mappedBy = "provider")
+    @JsonIgnore
+    private Users user;
 
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
@@ -97,8 +103,6 @@ public class Provider {
     @Column(name = "is_approved", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private Boolean isApproved = false;
 
-    @OneToOne(mappedBy = "provider")
-    private Users user;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")
@@ -108,8 +112,9 @@ public class Provider {
     @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime updatedAt;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20, columnDefinition = "VARCHAR(20) DEFAULT 'PENDING'")
-    private String status = "PENDING"; // PENDING → VERIFIED → APPROVED/REJECTED
+    private ProviderStatus status = ProviderStatus.PENDING;
 
     @Column(name = "verification_token", length = 500)
     private String verificationToken;
