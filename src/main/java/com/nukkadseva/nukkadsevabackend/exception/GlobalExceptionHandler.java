@@ -39,6 +39,15 @@ public class GlobalExceptionHandler {
         return buildErrorResponse("INVALID_FILE_TYPE", e.getMessage(), HttpStatus.UNSUPPORTED_MEDIA_TYPE);
     }
 
+    @ExceptionHandler(ProviderNotFoundException.class)
+    public ResponseEntity<ApiError> handleProviderNotFoundException(ProviderNotFoundException e) {
+        return buildErrorResponse("PROVIDER_NOT_FOUND", e.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(CustomerNotFoundException.class)
+    public ResponseEntity<ApiError> handleCustomerNotFoundException(CustomerNotFoundException e) {
+        return buildErrorResponse("CUSTOMER_NOT_FOUND", e.getMessage(), HttpStatus.NOT_FOUND);
+    }
 
     // define all methods above 👆👆👆👆
     @ExceptionHandler(Exception.class)

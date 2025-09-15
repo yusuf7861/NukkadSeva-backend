@@ -1,5 +1,6 @@
 package com.nukkadseva.nukkadsevabackend.entity;
 
+import com.nukkadseva.nukkadsevabackend.entity.enums.ProviderStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -108,8 +109,9 @@ public class Provider {
     @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime updatedAt;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20, columnDefinition = "VARCHAR(20) DEFAULT 'PENDING'")
-    private String status = "PENDING"; // PENDING → VERIFIED → APPROVED/REJECTED
+    private ProviderStatus status = ProviderStatus.PENDING;
 
     @Column(name = "verification_token", length = 500)
     private String verificationToken;

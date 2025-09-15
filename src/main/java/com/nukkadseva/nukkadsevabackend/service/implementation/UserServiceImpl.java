@@ -28,8 +28,8 @@ import com.nukkadseva.nukkadsevabackend.entity.Users;
 import com.nukkadseva.nukkadsevabackend.exception.EmailAlreadyExistsException;
 import com.nukkadseva.nukkadsevabackend.exception.InvalidOtpException;
 import com.nukkadseva.nukkadsevabackend.exception.UserAuthenticationException;
-import com.nukkadseva.nukkadsevabackend.jwt.JwtOtpUtil;
-import com.nukkadseva.nukkadsevabackend.jwt.JwtUtil;
+import com.nukkadseva.nukkadsevabackend.security.JwtOtpUtil;
+import com.nukkadseva.nukkadsevabackend.security.JwtUtil;
 import com.nukkadseva.nukkadsevabackend.repository.CustomerRepository;
 import com.nukkadseva.nukkadsevabackend.repository.UserRepository;
 import com.nukkadseva.nukkadsevabackend.util.AppUserDetailsService;
@@ -147,7 +147,7 @@ public class UserServiceImpl implements UserService {
             case "CUSTOMER":
                 Customers customer = customerRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Customer not found"));
 
-                String imageLink = azureBlobStorageService.uploadFile(file, "profilePictures");
+                String imageLink = azureBlobStorageService.uploadFile(file, "profilePicture");
                 customer.setPhotograph(imageLink);
                 customerRepository.save(customer);
                 break;

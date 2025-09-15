@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/providers")
+@RequestMapping("/api/public/providers")
 public class PublicController {
 
     private final ProviderService providerService;
@@ -35,7 +35,7 @@ public class PublicController {
 
         // Filter providers to only include those with "approved" status
         List<Provider> approvedProviders = providerPage.getContent().stream()
-                .filter(provider -> "approved".equalsIgnoreCase(provider.getStatus()))
+                .filter(provider -> "approved".equalsIgnoreCase(provider.getStatus().name()))
                 .collect(Collectors.toList());
 
         Map<String, Object> response = new HashMap<>();

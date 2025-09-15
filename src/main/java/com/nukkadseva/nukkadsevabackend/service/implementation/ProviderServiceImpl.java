@@ -1,9 +1,12 @@
 package com.nukkadseva.nukkadsevabackend.service.implementation;
 
 import com.nukkadseva.nukkadsevabackend.dto.ProviderDto;
+import com.nukkadseva.nukkadsevabackend.dto.response.ProviderSummaryDto;
 import com.nukkadseva.nukkadsevabackend.entity.Provider;
 import com.nukkadseva.nukkadsevabackend.entity.Users;
+import com.nukkadseva.nukkadsevabackend.entity.enums.ProviderStatus;
 import com.nukkadseva.nukkadsevabackend.entity.enums.Role;
+import com.nukkadseva.nukkadsevabackend.exception.ProviderNotFoundException;
 import com.nukkadseva.nukkadsevabackend.repository.ProviderRepository;
 import com.nukkadseva.nukkadsevabackend.repository.UserRepository;
 import com.nukkadseva.nukkadsevabackend.service.AzureBlobStorageService;
@@ -14,7 +17,9 @@ import freemarker.template.TemplateException;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.service.spi.ServiceException;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.dao.DataAccessException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -35,6 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -115,7 +121,7 @@ public class ProviderServiceImpl implements ProviderService{
         }
 
         // Set initial status and verification
-        provider.setStatus("PENDING");
+        provider.setStatus(ProviderStatus.PENDING);
         provider.setIsEmailVerified(false);
         provider.setIsApproved(false);
 
@@ -161,7 +167,7 @@ public class ProviderServiceImpl implements ProviderService{
 
     @Override
     public List<Provider> getPendingProviders() {
-        return providerRepository.findByStatus("PENDING");
+        return providerRepository.findByStatus(ProviderStatus.PENDING);
     }
 
     @Override
@@ -170,17 +176,17 @@ public class ProviderServiceImpl implements ProviderService{
     }
 
     @Override
-    public List<Provider> getProvidersByStatus(String status) {
+    public List<Provider> getProvidersByStatus(ProviderStatus status) {
         return providerRepository.findByStatus(status);
     }
 
     @Override
     @Transactional
-    public Provider approveProvider(Long providerId) throws TemplateException, IOException {
+    public Provider approveProvider(Long providerId) {
         Provider provider = providerRepository.findById(providerId)
-                .orElseThrow(() -> new RuntimeException("Provider not found with id: " + providerId));
+                .orElseThrow(() -> new ProviderNotFoundException("Provider not found with id: " + providerId));
 
-        if (!"PENDING".equals(provider.getStatus())) {
+        if (!ProviderStatus.PENDING.equals(provider.getStatus())) {
             throw new RuntimeException("Only pending providers can be approved");
         }
 
@@ -188,28 +194,32 @@ public class ProviderServiceImpl implements ProviderService{
             throw new RuntimeException("Provider email must be verified before approval");
         }
 
-        provider.setStatus("APPROVED");
-        provider.setIsApproved(true);
+        try {
+            provider.setStatus(ProviderStatus.APPROVED);
+            provider.setIsApproved(true);
 
-        // Generate a secure random password
-        String generatedPassword = generateSecurePassword();
+            // Generate a secure random password
+            String generatedPassword = generateSecurePassword();
 
-        // Create a corresponding User for the approved provider (owning side holds FK)
-        Users user = new Users();
-        user.setEmail(provider.getEmail());
-        user.setPassword(passwordEncoder.encode(generatedPassword));
-        user.setRole(Role.SERVICE_PROVIDER);
-        user.setVerified(true);
+            // Create a corresponding User for the approved provider (owning side holds FK)
+            Users user = new Users();
+            user.setEmail(provider.getEmail());
+            user.setPassword(passwordEncoder.encode(generatedPassword));
+            user.setRole(Role.SERVICE_PROVIDER);
+            user.setVerified(true);
 
-        user.setProvider(provider);
-        provider.setUser(user);
+            user.setProvider(provider);
+            provider.setUser(user);
 
-        userRepository.save(user);
-        Provider savedProvider = providerRepository.save(provider);
+            userRepository.save(user);
+            Provider savedProvider = providerRepository.save(provider);
 
-        sendProviderApprovalEmail(provider.getEmail(), generatedPassword);
+            sendProviderApprovalEmail(provider.getEmail(), generatedPassword);
 
-        return savedProvider;
+            return savedProvider;
+        } catch (IOException | TemplateException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -217,11 +227,11 @@ public class ProviderServiceImpl implements ProviderService{
         Provider provider = providerRepository.findById(providerId)
                 .orElseThrow(() -> new RuntimeException("Provider not found with id: " + providerId));
 
-        if (!"PENDING".equals(provider.getStatus())) {
+        if (!ProviderStatus.PENDING.equals(provider.getStatus())) {
             throw new RuntimeException("Only pending providers can be rejected");
         }
 
-        provider.setStatus("REJECTED");
+        provider.setStatus(ProviderStatus.REJECTED);
         provider.setRejectionReason(reason);
 
         sendProviderRejectionEmail(provider.getEmail(), reason);
@@ -408,10 +418,58 @@ public class ProviderServiceImpl implements ProviderService{
         // Implement admin notification logic here (e.g., send email to admin)
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProviderSummaryDto> getAllProvidersForAdmin() {
+        log.info("Fetching all providers for admin dashboard");
+
+        try {
+            return providerRepository.findAll().stream()
+                    .map(this::mapToProviderSummaryDto)
+                    .collect(Collectors.toList());
+
+        } catch (DataAccessException e) {
+            log.error("Database error while fetching providers", e);
+            throw new ServiceException("Database error occurred", e);
+        } catch (Exception e) {
+            log.error("Unexpected error while fetching providers", e);
+            throw new ServiceException("Failed to retrieve providers", e);
+        }
+    }
+
+    @Override
+    public ProviderDto getProviderByIdForAdmin(Long id) {
+        return null;
+    }
+
     /**
      * Generates a secure random token for verification
      */
     private String generateSecureToken() {
         return java.util.UUID.randomUUID().toString();
+    }
+
+    private ProviderSummaryDto mapToProviderSummaryDto(Provider provider) {
+        if (provider == null) {
+            log.warn("Null provider encountered during mapping");
+            return null;
+        }
+
+        try {
+            ProviderSummaryDto dto = new ProviderSummaryDto();
+            dto.setId(provider.getId());
+            dto.setFullName(provider.getFullName());
+            dto.setBusinessName(provider.getBusinessName());
+            dto.setMobileNumber(provider.getMobileNumber());
+            dto.setCreatedAt(provider.getCreatedAt());
+
+            dto.setStatus(provider.getStatus());
+
+            return dto;
+
+        } catch (Exception e) {
+            log.error("Error mapping provider with ID: {}", provider.getId(), e);
+            return null;
+        }
     }
 }
