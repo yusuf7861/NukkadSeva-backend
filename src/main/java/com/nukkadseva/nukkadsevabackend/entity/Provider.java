@@ -1,5 +1,6 @@
 package com.nukkadseva.nukkadsevabackend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nukkadseva.nukkadsevabackend.entity.enums.ProviderStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -22,6 +23,10 @@ public class Provider {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "provider_id", nullable = false)
     private Long id;
+
+    @OneToOne(mappedBy = "provider")
+    @JsonIgnore
+    private Users user;
 
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
@@ -98,8 +103,6 @@ public class Provider {
     @Column(name = "is_approved", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private Boolean isApproved = false;
 
-    @OneToOne(mappedBy = "provider")
-    private Users user;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")

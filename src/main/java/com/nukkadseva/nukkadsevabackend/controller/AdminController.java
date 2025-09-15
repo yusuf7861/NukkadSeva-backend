@@ -97,7 +97,8 @@ public class AdminController {
     }
 
     @GetMapping("/all-providers")
-    public List<ProviderSummaryDto> getAllProvidersForAdmin() {
-        return providerService.getAllProvidersForAdmin();
+    public ResponseEntity<List<ProviderSummaryDto>> getAllProvidersForAdmin() {
+        List<ProviderSummaryDto> allProvidersForAdmin = providerService.getAllProvidersForAdmin();
+        return ResponseEntity.ok(allProvidersForAdmin);
     }
 }
