@@ -1,7 +1,7 @@
 package com.nukkadseva.nukkadsevabackend.config;
 
 import com.nukkadseva.nukkadsevabackend.jwt.JwtAuthenticationFilter;
-import com.nukkadseva.nukkadsevabackend.service.AppUserDetailsService;
+import com.nukkadseva.nukkadsevabackend.util.AppUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

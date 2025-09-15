@@ -39,4 +39,6 @@ out/
 ### Enviroment variables ###
 .env
 
-uploads
+# Upload directory - contains user uploaded files
+/uploads
+/uploads/**
