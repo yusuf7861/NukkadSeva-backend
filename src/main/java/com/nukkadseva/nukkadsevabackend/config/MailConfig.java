@@ -1,6 +1,7 @@
 package com.nukkadseva.nukkadsevabackend.config;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -11,10 +12,12 @@ import java.util.Properties;
 @Configuration
 public class MailConfig {
 
-    Dotenv dotenv = Dotenv.load();
-    String host = dotenv.get("MAIL_SERVER");
-    String username = dotenv.get("MAIL_USERNAME");
-    String password = dotenv.get("MAIL_PASSWORD");
+    @Value("${spring.mail.host}")
+    private String host;
+    @Value("${spring.mail.username}")
+    private String username;
+    @Value("${spring.mail.password}")
+    private String password;
 
     @Bean
     public JavaMailSender javaMailSender() {

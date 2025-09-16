@@ -1,6 +1,6 @@
 package com.nukkadseva.nukkadsevabackend.controller;
 
-import com.nukkadseva.nukkadsevabackend.dto.ProviderDto;
+import com.nukkadseva.nukkadsevabackend.dto.request.ProviderDto;
 import com.nukkadseva.nukkadsevabackend.entity.Provider;
 import com.nukkadseva.nukkadsevabackend.service.ProviderService;
 import freemarker.template.TemplateException;

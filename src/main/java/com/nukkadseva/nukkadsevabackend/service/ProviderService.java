@@ -1,6 +1,6 @@
 package com.nukkadseva.nukkadsevabackend.service;
 
-import com.nukkadseva.nukkadsevabackend.dto.ProviderDto;
+import com.nukkadseva.nukkadsevabackend.dto.request.ProviderDto;
 import com.nukkadseva.nukkadsevabackend.dto.response.ProviderSummaryDto;
 import com.nukkadseva.nukkadsevabackend.entity.Provider;
 import com.nukkadseva.nukkadsevabackend.entity.enums.ProviderStatus;

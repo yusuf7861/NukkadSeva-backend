@@ -1,4 +1,4 @@
-package com.nukkadseva.nukkadsevabackend.dto;
+package com.nukkadseva.nukkadsevabackend.dto.request;
 
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
