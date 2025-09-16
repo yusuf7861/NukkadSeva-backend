@@ -36,10 +36,7 @@ public class PublicController {
     ) {
         Page<DashboardProviderDto> providerPage = providerService.searchProviders(category, city, pincode, page, limit);
 
-//        // Filter providers to only include those with "approved" status
-//        List<Provider> approvedProviders = providerPage.getContent().stream()
-//                .filter(provider -> "approved".equalsIgnoreCase(provider.getStatus().name()))
-//                .collect(Collectors.toList());
+// TODO: If provider filtering by "approved" status is needed, implement here.
 
         Map<String, Object> response = new HashMap<>();
         response.put("providers", providerPage.getContent());
