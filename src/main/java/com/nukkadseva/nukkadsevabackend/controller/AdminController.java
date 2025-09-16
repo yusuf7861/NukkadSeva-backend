@@ -1,5 +1,6 @@
 package com.nukkadseva.nukkadsevabackend.controller;
 
+import com.nukkadseva.nukkadsevabackend.dto.response.ProviderDetailDto;
 import com.nukkadseva.nukkadsevabackend.dto.response.ProviderSummaryDto;
 import com.nukkadseva.nukkadsevabackend.entity.Provider;
 import com.nukkadseva.nukkadsevabackend.entity.enums.ProviderStatus;
@@ -100,5 +101,11 @@ public class AdminController {
     public ResponseEntity<List<ProviderSummaryDto>> getAllProvidersForAdmin() {
         List<ProviderSummaryDto> allProvidersForAdmin = providerService.getAllProvidersForAdmin();
         return ResponseEntity.ok(allProvidersForAdmin);
+    }
+
+    @GetMapping("/providers/{id}")
+    public ResponseEntity<ProviderDetailDto> getProviderDetails(@PathVariable Long id) {
+        ProviderDetailDto providerByIdForAdmin = providerService.getProviderByIdForAdmin(id);
+        return ResponseEntity.ok(providerByIdForAdmin);
     }
 }

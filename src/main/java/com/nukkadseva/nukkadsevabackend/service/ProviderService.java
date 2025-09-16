@@ -1,6 +1,8 @@
 package com.nukkadseva.nukkadsevabackend.service;
 
-import com.nukkadseva.nukkadsevabackend.dto.ProviderDto;
+import com.nukkadseva.nukkadsevabackend.dto.request.ProviderDto;
+import com.nukkadseva.nukkadsevabackend.dto.response.DashboardProviderDto;
+import com.nukkadseva.nukkadsevabackend.dto.response.ProviderDetailDto;
 import com.nukkadseva.nukkadsevabackend.dto.response.ProviderSummaryDto;
 import com.nukkadseva.nukkadsevabackend.entity.Provider;
 import com.nukkadseva.nukkadsevabackend.entity.enums.ProviderStatus;
@@ -20,7 +22,7 @@ public interface ProviderService {
     Provider approveProvider(Long providerId) throws TemplateException, IOException;
     Provider rejectProvider(Long providerId, String reason) throws TemplateException, IOException;
     Optional<Provider> getProviderById(Long id);
-    Page<Provider> searchProviders(String category, String city, String pincode, int page, int limit);
+    Page<DashboardProviderDto> searchProviders(String category, String city, String pincode, int page, int limit);
 
     void sendProviderApprovalEmail(String email, String password) throws IOException, TemplateException;
 
@@ -30,5 +32,5 @@ public interface ProviderService {
 
     void notifyAdminsOfNewVerifiedProvider(Provider provider);
     List<ProviderSummaryDto> getAllProvidersForAdmin();
-    ProviderDto getProviderByIdForAdmin(Long id);
+    ProviderDetailDto getProviderByIdForAdmin(Long id);
 }

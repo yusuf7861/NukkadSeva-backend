@@ -34,6 +34,10 @@ spring:
     contexts: dev
     drop-first: false
     clear-checksums: true
+  mail:
+    host: ${MAIL_HOST}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
 
 # Storage Configuration
 storage:
@@ -59,7 +63,7 @@ logging:
 
 jwt:
   secret:
-    key: bHVra2Fkc2V2YS1zZWNyZXQta2V5LWZvci1qd3QtYXV0aGVudGljYXRpb24tYW5kLWF1dGhvcml6YXRpb24=
+    key: ${JWT_SECRET_KEY}
     expiration: 86400000
 
   #  datasource:
@@ -68,3 +72,4 @@ jwt:
   #    password: g!ZEC8ME.W.W_Ae
   #    driver-class-name: org.postgresql.Driver
   # JPA Configuration
+

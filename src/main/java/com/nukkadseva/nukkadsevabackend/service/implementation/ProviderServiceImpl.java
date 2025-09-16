@@ -1,12 +1,15 @@
 package com.nukkadseva.nukkadsevabackend.service.implementation;
 
-import com.nukkadseva.nukkadsevabackend.dto.ProviderDto;
+import com.nukkadseva.nukkadsevabackend.dto.request.ProviderDto;
+import com.nukkadseva.nukkadsevabackend.dto.response.DashboardProviderDto;
+import com.nukkadseva.nukkadsevabackend.dto.response.ProviderDetailDto;
 import com.nukkadseva.nukkadsevabackend.dto.response.ProviderSummaryDto;
 import com.nukkadseva.nukkadsevabackend.entity.Provider;
 import com.nukkadseva.nukkadsevabackend.entity.Users;
 import com.nukkadseva.nukkadsevabackend.entity.enums.ProviderStatus;
 import com.nukkadseva.nukkadsevabackend.entity.enums.Role;
 import com.nukkadseva.nukkadsevabackend.exception.ProviderNotFoundException;
+import com.nukkadseva.nukkadsevabackend.mapper.ProviderMapper;
 import com.nukkadseva.nukkadsevabackend.repository.ProviderRepository;
 import com.nukkadseva.nukkadsevabackend.repository.UserRepository;
 import com.nukkadseva.nukkadsevabackend.service.AzureBlobStorageService;
@@ -32,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.security.SecureRandom;
@@ -53,6 +57,7 @@ public class ProviderServiceImpl implements ProviderService{
     private final JavaMailSender mailSender;
     private final AzureBlobStorageService azureBlobStorageService;
     private final Configuration freemarkerConfiguration;
+    private final ProviderMapper providerMapper;
 
     private static final String CHAR_LOWER = "abcdefghijklmnopqrstuvwxyz";
     private static final String CHAR_UPPER = CHAR_LOWER.toUpperCase();
@@ -63,7 +68,7 @@ public class ProviderServiceImpl implements ProviderService{
 
     @Override
     @Transactional
-    public Provider registerProvider(ProviderDto providerDto) throws IOException {
+    public Provider registerProvider(ProviderDto providerDto) {
         // Check for duplicate email
         if (providerRepository.findByEmail(providerDto.getEmail()).isPresent()) {
             throw new RuntimeException("A provider with this email already exists");
@@ -274,8 +279,7 @@ public class ProviderServiceImpl implements ProviderService{
     }
 
     @Override
-    public Page<Provider> searchProviders(String category, String city, String pincode, int page, int limit) {
-        // Validate page and limit parameters
+    public Page<DashboardProviderDto> searchProviders(String category, String city, String pincode, int page, int limit) {
         if (page < 1) {
             throw new IllegalArgumentException("Page number must be at least 1.");
         }
@@ -284,24 +288,25 @@ public class ProviderServiceImpl implements ProviderService{
         }
         Pageable pageable = PageRequest.of(page - 1, limit);
 
-        Specification<Provider> spec = (root, criteriaQuery, criteriaBuilder) -> {
+        Specification<Provider> spec = (root, query, criteriaBuilder) -> {
             Predicate predicate = criteriaBuilder.conjunction();
+            predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("status"), ProviderStatus.APPROVED));
 
             if (category != null && !category.isEmpty()) {
                 predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("serviceCategory"), category));
             }
-            
             if (city != null && !city.isEmpty()) {
                 predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("city"), city));
             }
             if (pincode != null && !pincode.isEmpty()) {
-                predicate = criteriaBuilder.and(predicate, criteriaBuilder.like(root.get("serviceArea"), pincode + "%"));
+                predicate = criteriaBuilder.and(predicate, criteriaBuilder.like(root.get("serviceArea"), "%" + pincode + "%"));
             }
-
             return predicate;
         };
 
-        return providerRepository.findAll(spec, pageable);
+        Page<Provider> providerPage = providerRepository.findAll(spec, pageable);
+
+        return providerPage.map(providerMapper::toDashboardProviderDto);
     }
 
     /**
@@ -424,8 +429,7 @@ public class ProviderServiceImpl implements ProviderService{
         log.info("Fetching all providers for admin dashboard");
 
         try {
-            return providerRepository.findAll().stream()
-                    .map(this::mapToProviderSummaryDto)
+            return providerRepository.findAll().stream().map(providerMapper::toProviderSummaryDto)
                     .collect(Collectors.toList());
 
         } catch (DataAccessException e) {
@@ -438,8 +442,20 @@ public class ProviderServiceImpl implements ProviderService{
     }
 
     @Override
-    public ProviderDto getProviderByIdForAdmin(Long id) {
-        return null;
+    public ProviderDetailDto getProviderByIdForAdmin(Long id) {
+        log.info("Fetching provider details of ID: {}", id);
+
+        try {
+            Provider provider = providerRepository.findById(id).orElseThrow(() -> new ProviderNotFoundException("Provider not found:"));
+
+            return providerMapper.toProviderDetailDto(provider);
+        } catch (ProviderNotFoundException e) {
+            log.warn("Provider not found for id {}: {}", id, e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error while fetching provider details", e);
+            throw new ServiceException("Failed to retrieve provider details", e);
+        }
     }
 
     /**
@@ -447,29 +463,5 @@ public class ProviderServiceImpl implements ProviderService{
      */
     private String generateSecureToken() {
         return java.util.UUID.randomUUID().toString();
-    }
-
-    private ProviderSummaryDto mapToProviderSummaryDto(Provider provider) {
-        if (provider == null) {
-            log.warn("Null provider encountered during mapping");
-            return null;
-        }
-
-        try {
-            ProviderSummaryDto dto = new ProviderSummaryDto();
-            dto.setId(provider.getId());
-            dto.setFullName(provider.getFullName());
-            dto.setBusinessName(provider.getBusinessName());
-            dto.setMobileNumber(provider.getMobileNumber());
-            dto.setCreatedAt(provider.getCreatedAt());
-
-            dto.setStatus(provider.getStatus());
-
-            return dto;
-
-        } catch (Exception e) {
-            log.error("Error mapping provider with ID: {}", provider.getId(), e);
-            return null;
-        }
     }
 }
