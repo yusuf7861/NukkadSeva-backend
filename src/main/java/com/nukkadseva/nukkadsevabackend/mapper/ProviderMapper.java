@@ -1,6 +1,5 @@
 package com.nukkadseva.nukkadsevabackend.mapper;
 
-import com.azure.core.http.rest.Page;
 import com.nukkadseva.nukkadsevabackend.dto.request.ProviderDto;
 import com.nukkadseva.nukkadsevabackend.dto.response.DashboardProviderDto;
 import com.nukkadseva.nukkadsevabackend.dto.response.ProviderDetailDto;
@@ -44,7 +43,7 @@ public interface ProviderMapper {
     /**
      * Maps a Provider entity to a DashboardProviderDto for the public dashboard.
      */
-    Page<DashboardProviderDto> toDashboardProviderDto(Provider provider);
+    DashboardProviderDto toDashboardProviderDto(Provider provider);
 
     /**
      * Maps a list of Provider entities to a list of DashboardProviderDtos.

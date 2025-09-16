@@ -22,7 +22,7 @@ public interface ProviderService {
     Provider approveProvider(Long providerId) throws TemplateException, IOException;
     Provider rejectProvider(Long providerId, String reason) throws TemplateException, IOException;
     Optional<Provider> getProviderById(Long id);
-    Page<Provider> searchProviders(String category, String city, String pincode, int page, int limit);
+    Page<DashboardProviderDto> searchProviders(String category, String city, String pincode, int page, int limit);
 
     void sendProviderApprovalEmail(String email, String password) throws IOException, TemplateException;
 

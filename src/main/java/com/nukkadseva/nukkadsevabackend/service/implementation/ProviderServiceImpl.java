@@ -1,6 +1,7 @@
 package com.nukkadseva.nukkadsevabackend.service.implementation;
 
 import com.nukkadseva.nukkadsevabackend.dto.request.ProviderDto;
+import com.nukkadseva.nukkadsevabackend.dto.response.DashboardProviderDto;
 import com.nukkadseva.nukkadsevabackend.dto.response.ProviderDetailDto;
 import com.nukkadseva.nukkadsevabackend.dto.response.ProviderSummaryDto;
 import com.nukkadseva.nukkadsevabackend.entity.Provider;
@@ -67,7 +68,7 @@ public class ProviderServiceImpl implements ProviderService{
 
     @Override
     @Transactional
-    public Provider registerProvider(ProviderDto providerDto) throws IOException {
+    public Provider registerProvider(ProviderDto providerDto) {
         // Check for duplicate email
         if (providerRepository.findByEmail(providerDto.getEmail()).isPresent()) {
             throw new RuntimeException("A provider with this email already exists");
@@ -278,8 +279,7 @@ public class ProviderServiceImpl implements ProviderService{
     }
 
     @Override
-    public Page<Provider> searchProviders(String category, String city, String pincode, int page, int limit) {
-        // Validate page and limit parameters
+    public Page<DashboardProviderDto> searchProviders(String category, String city, String pincode, int page, int limit) {
         if (page < 1) {
             throw new IllegalArgumentException("Page number must be at least 1.");
         }
@@ -288,24 +288,25 @@ public class ProviderServiceImpl implements ProviderService{
         }
         Pageable pageable = PageRequest.of(page - 1, limit);
 
-        Specification<Provider> spec = (root, criteriaQuery, criteriaBuilder) -> {
+        Specification<Provider> spec = (root, query, criteriaBuilder) -> {
             Predicate predicate = criteriaBuilder.conjunction();
+            predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("status"), ProviderStatus.APPROVED));
 
             if (category != null && !category.isEmpty()) {
                 predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("serviceCategory"), category));
             }
-            
             if (city != null && !city.isEmpty()) {
                 predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("city"), city));
             }
             if (pincode != null && !pincode.isEmpty()) {
-                predicate = criteriaBuilder.and(predicate, criteriaBuilder.like(root.get("serviceArea"), pincode + "%"));
+                predicate = criteriaBuilder.and(predicate, criteriaBuilder.like(root.get("serviceArea"), "%" + pincode + "%"));
             }
-
             return predicate;
         };
 
-        return providerRepository.findAll(spec, pageable);
+        Page<Provider> providerPage = providerRepository.findAll(spec, pageable);
+
+        return providerPage.map(providerMapper::toDashboardProviderDto);
     }
 
     /**

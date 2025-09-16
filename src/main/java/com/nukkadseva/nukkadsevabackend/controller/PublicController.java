@@ -1,9 +1,11 @@
 package com.nukkadseva.nukkadsevabackend.controller;
 
 import com.nukkadseva.nukkadsevabackend.dto.PublicProviderDto;
+import com.nukkadseva.nukkadsevabackend.dto.response.DashboardProviderDto;
 import com.nukkadseva.nukkadsevabackend.entity.Provider;
 import com.nukkadseva.nukkadsevabackend.service.ProviderService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +21,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/public/providers")
+@Slf4j
 public class PublicController {
 
     private final ProviderService providerService;
@@ -31,19 +34,19 @@ public class PublicController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "6") int limit
     ) {
-        Page<Provider> providerPage = providerService.searchProviders(category, city, pincode, page, limit);
+        Page<DashboardProviderDto> providerPage = providerService.searchProviders(category, city, pincode, page, limit);
 
-        // Filter providers to only include those with "approved" status
-        List<Provider> approvedProviders = providerPage.getContent().stream()
-                .filter(provider -> "approved".equalsIgnoreCase(provider.getStatus().name()))
-                .collect(Collectors.toList());
+//        // Filter providers to only include those with "approved" status
+//        List<Provider> approvedProviders = providerPage.getContent().stream()
+//                .filter(provider -> "approved".equalsIgnoreCase(provider.getStatus().name()))
+//                .collect(Collectors.toList());
 
         Map<String, Object> response = new HashMap<>();
-        response.put("providers", approvedProviders);
+        response.put("providers", providerPage.getContent());
         response.put("pagination", Map.of(
                 "currentPage", providerPage.getNumber() + 1,
                 "totalPages", providerPage.getTotalPages(),
-                "totalItems", approvedProviders.size()
+                "totalItems", providerPage.getTotalElements()
         ));
 
         return ResponseEntity.ok(response);
