@@ -1,6 +1,8 @@
 package com.nukkadseva.nukkadsevabackend.service;
 
 import com.nukkadseva.nukkadsevabackend.dto.request.ProviderDto;
+import com.nukkadseva.nukkadsevabackend.dto.response.DashboardProviderDto;
+import com.nukkadseva.nukkadsevabackend.dto.response.ProviderDetailDto;
 import com.nukkadseva.nukkadsevabackend.dto.response.ProviderSummaryDto;
 import com.nukkadseva.nukkadsevabackend.entity.Provider;
 import com.nukkadseva.nukkadsevabackend.entity.enums.ProviderStatus;
@@ -30,5 +32,5 @@ public interface ProviderService {
 
     void notifyAdminsOfNewVerifiedProvider(Provider provider);
     List<ProviderSummaryDto> getAllProvidersForAdmin();
-    ProviderDto getProviderByIdForAdmin(Long id);
+    ProviderDetailDto getProviderByIdForAdmin(Long id);
 }
