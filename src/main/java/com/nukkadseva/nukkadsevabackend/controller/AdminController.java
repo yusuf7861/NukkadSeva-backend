@@ -1,6 +1,5 @@
 package com.nukkadseva.nukkadsevabackend.controller;
 
-import com.nukkadseva.nukkadsevabackend.dto.PublicProviderDto;
 import com.nukkadseva.nukkadsevabackend.dto.response.ProviderDetailDto;
 import com.nukkadseva.nukkadsevabackend.dto.response.ProviderSummaryDto;
 import com.nukkadseva.nukkadsevabackend.entity.Provider;
