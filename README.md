@@ -1,6 +1,6 @@
 # NukkadSeva Backend
 
-[![Node.js](https://img.shields.io/badge/Node.js-18.x-green.svg)](https://nodejs.org/) [![Express](https://img.shields.io/badge/Express-4.x-blue.svg)](https://expressjs.com/) [![MongoDB](https://img.shields.io/badge/MongoDB-6.x-green.svg)](https://www.mongodb.com/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![SPringBoot](https://img.shields.io/badge/SpringBoot-13.x-green.svg)](https://spring.io/) [![Java](https://img.shields.io/badge/Java-17.x-blue.svg)](https://java.com/) [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-6.x-green.svg)](https://www.postgresql.org/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **NukkadSeva** is a comprehensive local services marketplace that connects service providers with customers in their neighborhood. This backend API powers the entire platform with robust authentication, service management, booking systems, and real-time communication features.
 
@@ -405,3 +405,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Built with ❤️ by the NukkadSeva Team**
 
 *Connecting communities, one service at a time.*
+
