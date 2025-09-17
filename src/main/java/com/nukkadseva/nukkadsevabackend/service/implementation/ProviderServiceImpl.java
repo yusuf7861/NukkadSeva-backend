@@ -85,13 +85,13 @@ public class ProviderServiceImpl implements ProviderService{
         provider.setMobileNumber(providerDto.getMobileNumber());
         provider.setEmail(providerDto.getEmail());
         provider.setBusinessName(providerDto.getBusinessName());
-        provider.setServiceCategory(providerDto.getServiceCategory());
+        provider.setServiceCategory(providerDto.getServiceCategory().toUpperCase());
         provider.setServiceArea(providerDto.getServiceArea());
         provider.setExperience(providerDto.getExperience());
         provider.setLanguages(providerDto.getLanguages());
         provider.setFullAddress(providerDto.getFullAddress());
         provider.setState(providerDto.getState());
-        provider.setCity(providerDto.getCity());
+        provider.setCity(providerDto.getCity().toUpperCase());
         provider.setPincode(providerDto.getPincode());
         provider.setGstin(providerDto.getGstin());
         provider.setBio(providerDto.getBio());
