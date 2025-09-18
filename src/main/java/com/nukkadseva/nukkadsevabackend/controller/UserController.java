@@ -11,8 +11,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import com.nukkadseva.nukkadsevabackend.dto.ApiResponse;
@@ -39,11 +41,11 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody UserRequest userRequest, HttpServletResponse response) {
-        String token = userService.login(userRequest);
+        AuthResponse login = userService.login(userRequest);
 
-        ResponseCookie cookie = ResponseCookie.from("jwt", token)
+        ResponseCookie cookie = ResponseCookie.from("jwt", login.getToken())
                 .httpOnly(true)
-                .secure(true)
+                .secure(false) //TODO: make true at the time of deployment
                 .path("/")
                 .maxAge(Duration.ofDays(1))
                 .sameSite("none")
@@ -51,7 +53,7 @@ public class UserController {
 
         response.addHeader("Set-Cookie", cookie.toString());
 
-        return ResponseEntity.ok(new AuthResponse(token, userRequest.getEmail()));
+        return ResponseEntity.ok(login);
     }
 
     @PostMapping("/send-verification-otp")
@@ -104,5 +106,27 @@ public class UserController {
         userService.updateProfilePicture(file, authentication);
         return ResponseEntity.ok()
                 .body(new ApiResponse("PROFILE_UPDATED", "Profile Picture Updated Successfully"));
+    }
+
+    @GetMapping("/auth/me")
+    public ResponseEntity<AuthResponse> authMe(Authentication authentication) {
+        if(authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        String role = authentication.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .findFirst()
+                .orElse("USER");
+
+        AuthResponse authResponse = new AuthResponse(
+                null,
+                userDetails.getUsername(),
+                role
+        );
+
+        return ResponseEntity.ok(authResponse);
     }
 }
