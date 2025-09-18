@@ -7,15 +7,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import com.nukkadseva.nukkadsevabackend.dto.response.AuthResponse;
 import com.nukkadseva.nukkadsevabackend.entity.Customers;
 import com.nukkadseva.nukkadsevabackend.entity.Provider;
 import com.nukkadseva.nukkadsevabackend.repository.ProviderRepository;
 import com.nukkadseva.nukkadsevabackend.service.AzureBlobStorageService;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
@@ -46,6 +47,7 @@ import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -64,19 +66,40 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public String login(UserRequest userRequest) {
+    public AuthResponse login(UserRequest userRequest) {
         try {
-            authenticationManager.authenticate(
+            Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            userRequest.getEmail(), userRequest.getPassword()
+                            userRequest.getEmail(),
+                            userRequest.getPassword()
                     )
             );
-            final UserDetails userDetails = userDetailsService.loadUserByUsername(userRequest.getEmail());
 
-            final String token = jwtUtil.generateToken(userDetails);
-            return token;
-        } catch (AuthenticationException e) {
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            String token = jwtUtil.generateToken(userDetails);
+
+            String role = authentication.getAuthorities()
+                    .stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .findFirst()
+                    .orElse("USER");
+
+            return new AuthResponse(
+                    token,
+                    userDetails.getUsername(),
+                    role
+            );
+
+        } catch (BadCredentialsException e) {
+            log.warn("Failed login attempt for email: {}", userRequest.getEmail());
             throw new UserAuthenticationException("Invalid email or password");
+        } catch (DisabledException e) {
+            throw new UserAuthenticationException("Account is disabled");
+        } catch (LockedException e) {
+            throw new UserAuthenticationException("Account is locked");
+        } catch (AuthenticationException e) {
+            log.error("Authentication failed for email: {}", userRequest.getEmail(), e);
+            throw new UserAuthenticationException("Authentication failed");
         }
     }
 
