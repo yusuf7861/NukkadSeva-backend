@@ -114,7 +114,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String role = authentication.getAuthorities()
                 .stream()
                 .map(GrantedAuthority::getAuthority)
