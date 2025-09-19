@@ -47,11 +47,15 @@ public class SecurityConfig {
                                         "/api/customer/register",
                                         "/api/provider/register",
                                         "/api/public/**",
+                                        "/api/logout",
+                                        "/api/auth/me",
+                                        "/api/provider/verify-email",
+                                        "/api/send-verification-otp",
+                                        "/api/verify-otp",
                                         // Swagger endpoints
-                                        "/swagger-ui/**",
-                                        "/swagger-ui.html",
                                         "/v3/api-docs/**",
-                                        "/v3/api-docs.yaml"
+                                        "/swagger-ui/**",
+                                        "/swagger-ui.html"
                                 ).permitAll()
                                 .anyRequest().authenticated()
                 )
@@ -84,7 +88,8 @@ public class SecurityConfig {
         config.setAllowedOrigins(List.of(
                 "http://localhost:5174",
                 "http://localhost:5173",
-                "http://localhost:9002"
+                "http://localhost:9002",
+                "https://nukkad-seva.vercel.app/"
                 ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cookie"));
