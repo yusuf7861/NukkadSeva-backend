@@ -1,6 +1,7 @@
 package com.nukkadseva.nukkadsevabackend.exception;
 
 import com.nukkadseva.nukkadsevabackend.dto.ApiError;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -47,6 +48,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CustomerNotFoundException.class)
     public ResponseEntity<ApiError> handleCustomerNotFoundException(CustomerNotFoundException e) {
         return buildErrorResponse("CUSTOMER_NOT_FOUND", e.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(BookingCreationException.class)
+    public ResponseEntity<ApiError> handleBookingCreationException(BookingCreationException e) {
+        return buildErrorResponse("BOOKING_FAILED",  e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(DataAccessException.class)
+    public ResponseEntity<ApiError> handleDataAccessException(DataAccessException e) {
+        return buildErrorResponse("DATABASE_ERROR", e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     // define all methods above 👆👆👆👆
