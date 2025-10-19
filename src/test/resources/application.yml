@@ -1,0 +1,62 @@
+# Test Configuration
+spring:
+  application:
+    name: nukkadseva-backend-test
+
+  # In-memory H2 Database for Testing
+  datasource:
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+  cloud:
+    azure:
+      storage:
+        connection-string: DefaultEndpointsProtocol=https;AccountName=test;AccountKey=test;EndpointSuffix=core.windows.net
+        blob:
+          container-name: test-container
+
+  # Liquibase Configuration
+  liquibase:
+    enabled: false
+
+  mail:
+    host: smtp.test.com
+    username: test@test.com
+    password: test-password
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+# Storage Configuration
+storage:
+  type: local
+
+# Server Configuration
+server:
+  port: 8080
+
+# JWT Configuration
+jwt:
+  secret:
+    key: test-secret-key-for-testing-purposes-only-min-256-bits
+    expiration: 86400000
+
+# Logging
+logging:
+  level:
+    org.springframework: INFO
+    com.nukkadseva: DEBUG
+
