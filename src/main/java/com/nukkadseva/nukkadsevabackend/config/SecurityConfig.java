@@ -48,7 +48,6 @@ public class SecurityConfig {
                                         "/api/provider/register",
                                         "/api/public/**",
                                         "/api/logout",
-                                        "/api/auth/me",
                                         "/api/provider/verify-email",
                                         "/api/send-verification-otp",
                                         "/api/verify-otp",
