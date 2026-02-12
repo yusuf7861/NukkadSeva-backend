@@ -466,4 +466,10 @@ public class ProviderServiceImpl implements ProviderService{
     private String generateSecureToken() {
         return java.util.UUID.randomUUID().toString();
     }
+
+    @Override
+    public Provider getProviderByEmail(String email) {
+        return providerRepository.findByEmail(email)
+                .orElseThrow(() -> new ProviderNotFoundException("Provider not found with email: " + email));
+    }
 }
