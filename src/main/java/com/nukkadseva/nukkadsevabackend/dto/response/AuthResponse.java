@@ -1,12 +1,20 @@
 package com.nukkadseva.nukkadsevabackend.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
+@Builder
 @AllArgsConstructor
 public class AuthResponse {
-    private String token;
-    private String email;
-    private String role;
+    @JsonProperty("access_token")
+    private String accessToken;
+
+    @JsonProperty("refresh_token")
+    private String refreshToken;
+
+    @JsonProperty("token_type")
+    private String tokenType;
 }

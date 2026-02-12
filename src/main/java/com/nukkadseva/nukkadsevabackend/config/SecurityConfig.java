@@ -49,8 +49,7 @@ public class SecurityConfig {
                                         "/api/public/**",
                                         "/api/logout",
                                         "/api/provider/verify-email",
-                                        "/api/send-verification-otp",
-                                        "/api/verify-otp",
+                                        "/api/verify-email",
                                         // Swagger endpoints
                                         "/v3/api-docs/**",
                                         "/swagger-ui/**",
