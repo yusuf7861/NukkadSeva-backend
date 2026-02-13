@@ -32,78 +32,79 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final AppUserDetailsService userDetailsService;
+        private final AppUserDetailsService userDetailsService;
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter, CustomAuthenticationEntryPoint entryPoint, CustomAccessDeniedHandler accessDeniedHandler) throws Exception {
-        http
-                .cors(Customizer.withDefaults())
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(
-                        authorize -> authorize
-                                .requestMatchers(
-                                        // public endpoints
-                                        "/api/login",
-                                        "/api/customer/register",
-                                        "/api/provider/register",
-                                        "/api/public/**",
-                                        "/api/logout",
-                                        "/api/provider/verify-email",
-                                        "/api/verify-email",
-                                        // Swagger endpoints
-                                        "/v3/api-docs/**",
-                                        "/swagger-ui/**",
-                                        "/swagger-ui.html"
-                                ).permitAll()
-                                .anyRequest().authenticated()
-                )
-                .exceptionHandling(
-                        ex -> ex.
-                                authenticationEntryPoint(entryPoint)
-                                .accessDeniedHandler(accessDeniedHandler)
-                )
-                .sessionManagement(
-                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .addFilterBefore(
-                        jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class
-                );
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                        JwtAuthenticationFilter jwtAuthenticationFilter, CustomAuthenticationEntryPoint entryPoint,
+                        CustomAccessDeniedHandler accessDeniedHandler) throws Exception {
+                http
+                                .cors(Customizer.withDefaults())
+                                .csrf(AbstractHttpConfigurer::disable)
+                                .authorizeHttpRequests(
+                                                authorize -> authorize
+                                                                .requestMatchers(
+                                                                                // public endpoints
+                                                                                "/api/login",
+                                                                                "/api/customer/register",
+                                                                                "/api/provider/register",
+                                                                                "/api/public/**",
+                                                                                "/api/logout",
+                                                                                "/api/provider/verify-email",
+                                                                                "/api/provider/verify-email",
+                                                                                "/api/verify-email",
+                                                                                "/api/services/**",
+                                                                                // Swagger endpoints
+                                                                                "/v3/api-docs/**",
+                                                                                "/swagger-ui/**",
+                                                                                "/swagger-ui.html",
+                                                                                // WebSocket endpoint
+                                                                                "/ws/**")
+                                                                .permitAll()
+                                                                .anyRequest().authenticated())
+                                .exceptionHandling(
+                                                ex -> ex.authenticationEntryPoint(entryPoint)
+                                                                .accessDeniedHandler(accessDeniedHandler))
+                                .sessionManagement(
+                                                session -> session
+                                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                .addFilterBefore(
+                                                jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
                 return http.build();
-    }
+        }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+                return new BCryptPasswordEncoder();
+        }
 
-    @Bean
-    public CorsFilter corsFilter() {
-        return new CorsFilter(corsConfigurationSource());
-    }
+        @Bean
+        public CorsFilter corsFilter() {
+                return new CorsFilter(corsConfigurationSource());
+        }
 
-    private UrlBasedCorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(
-                "http://localhost:5174",
-                "http://localhost:5173",
-                "http://localhost:9002",
-                "http://localhost:3000",
-                "https://nukkad-seva.vercel.app/"
-                ));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cookie"));
-        config.setAllowCredentials(true);
+        private UrlBasedCorsConfigurationSource corsConfigurationSource() {
+                CorsConfiguration config = new CorsConfiguration();
+                config.setAllowedOrigins(List.of(
+                                "http://localhost:5174",
+                                "http://localhost:5173",
+                                "http://localhost:9002",
+                                "http://localhost:3000",
+                                "https://nukkad-seva.vercel.app/"));
+                config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+                config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cookie"));
+                config.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
-    }
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                source.registerCorsConfiguration("/**", config);
+                return source;
+        }
 
-    @Bean
-    public AuthenticationManager authenticationManager(){
-        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-        authenticationProvider.setUserDetailsService(userDetailsService);
-        authenticationProvider.setPasswordEncoder(passwordEncoder());
-        return new ProviderManager(authenticationProvider);
-    }
+        @Bean
+        public AuthenticationManager authenticationManager() {
+                DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+                authenticationProvider.setUserDetailsService(userDetailsService);
+                authenticationProvider.setPasswordEncoder(passwordEncoder());
+                return new ProviderManager(authenticationProvider);
+        }
 }

@@ -3,12 +3,10 @@ package com.nukkadseva.nukkadsevabackend.controller;
 import com.nukkadseva.nukkadsevabackend.dto.request.ProviderDto;
 import com.nukkadseva.nukkadsevabackend.entity.Provider;
 import com.nukkadseva.nukkadsevabackend.service.ProviderService;
-import freemarker.template.TemplateException;
-import jakarta.mail.MessagingException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -17,10 +15,10 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/provider")
+@RequiredArgsConstructor
 public class ProviderController {
 
-    @Autowired
-    private ProviderService providerService;
+    private final ProviderService providerService;
 
     @PostMapping(value = "/register", consumes = "multipart/form-data")
     public ResponseEntity<?> registerProvider(@ModelAttribute ProviderDto providerDto) {
@@ -29,27 +27,17 @@ public class ProviderController {
             return new ResponseEntity<>(registeredProvider, HttpStatus.CREATED);
         } catch (IOException e) {
             return new ResponseEntity<>(
-                Map.of("message", "Failed to process file: " + e.getMessage()),
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+                    Map.of("message", "Failed to process file: " + e.getMessage()),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(
-                Map.of("message", e.getMessage()),
-                HttpStatus.BAD_REQUEST
-            );
+                    Map.of("message", e.getMessage()),
+                    HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             return new ResponseEntity<>(
-                Map.of("message", "An error occurred during registration: " + e.getMessage()),
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+                    Map.of("message", "An error occurred during registration: " + e.getMessage()),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/pending")
-    public ResponseEntity<List<Provider>> getPendingProviders() {
-        List<Provider> pendingProviders = providerService.getPendingProviders();
-        return new ResponseEntity<>(pendingProviders, HttpStatus.OK);
     }
 
     @GetMapping("/all")
@@ -58,47 +46,39 @@ public class ProviderController {
         return new ResponseEntity<>(allProviders, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/{id}/approve")
-    public ResponseEntity<Provider> approveProvider(@PathVariable Long id) throws MessagingException, TemplateException, IOException {
-        Provider approvedProvider = providerService.approveProvider(id);
-        return new ResponseEntity<>(approvedProvider, HttpStatus.OK);
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/{id}/reject")
-    public ResponseEntity<Provider> rejectProvider(@PathVariable Long id, @RequestParam String reason) throws TemplateException, IOException {
-        Provider rejectedProvider = providerService.rejectProvider(id, reason);
-        return new ResponseEntity<>(rejectedProvider, HttpStatus.OK);
-    }
-
     @GetMapping("/verify-email")
     public ResponseEntity<String> verifyProviderEmail(@RequestParam String token) {
         boolean verified = providerService.verifyProviderEmail(token);
         if (verified) {
-            return new ResponseEntity<>("Email verified successfully. Your application is now pending admin approval.", HttpStatus.OK);
+            return new ResponseEntity<>("Email verified successfully. Your application is now pending admin approval.",
+                    HttpStatus.OK);
         } else {
             return new ResponseEntity<>("Invalid or expired verification token.", HttpStatus.BAD_REQUEST);
         }
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/{id}")
-    public ResponseEntity<Provider> getProviderById(@PathVariable Long id) {
-        return providerService.getProviderById(id)
-                .map(provider -> new ResponseEntity<>(provider, HttpStatus.OK))
-                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
-    }
-
     @GetMapping("/profile")
     public ResponseEntity<?> getProfile() {
         try {
-            org.springframework.security.core.Authentication authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
-            String email = authentication.getName();
+            org.springframework.security.core.Authentication authentication = org.springframework.security.core.context.SecurityContextHolder
+                    .getContext().getAuthentication();
+            Object principal = authentication != null ? authentication.getPrincipal() : null;
+            String email = null;
+            if (principal instanceof com.nukkadseva.nukkadsevabackend.security.AuthUser authUser) {
+                email = authUser.getEmail();
+            } else if (principal instanceof UserDetails userDetails) {
+                email = userDetails.getUsername();
+            } else if (principal != null) {
+                email = principal.toString();
+            }
+            if (email == null || email.isBlank()) {
+                return new ResponseEntity<>(Map.of("message", "Authenticated user email not found"), HttpStatus.UNAUTHORIZED);
+            }
             Provider provider = providerService.getProviderByEmail(email);
             return new ResponseEntity<>(provider, HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>(Map.of("message", "Failed to fetch profile: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(Map.of("message", "Failed to fetch profile: " + e.getMessage()),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
