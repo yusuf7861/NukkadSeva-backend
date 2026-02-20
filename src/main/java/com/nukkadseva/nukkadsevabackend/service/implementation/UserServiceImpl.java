@@ -28,10 +28,11 @@ import com.nukkadseva.nukkadsevabackend.repository.UserRepository;
 
 import org.springframework.web.multipart.MultipartFile;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(UserServiceImpl.class);
 
     private final UserRepository userRepository;
     private final CustomerRepository customerRepository;
@@ -40,17 +41,13 @@ public class UserServiceImpl implements UserService {
     private final JwtUtil jwtUtil;
     private final AzureBlobStorageService azureBlobStorageService;
 
-
-
     @Override
     public AuthResponse login(UserRequest userRequest) {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             userRequest.getEmail(),
-                            userRequest.getPassword()
-                    )
-            );
+                            userRequest.getPassword()));
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
@@ -90,7 +87,6 @@ public class UserServiceImpl implements UserService {
             throw new UserAuthenticationException("Authentication failed");
         }
     }
-
 
     private Long getProfileId(Users user) {
         if (user.getCustomers() != null) {
@@ -132,7 +128,8 @@ public class UserServiceImpl implements UserService {
 
         switch (role) {
             case "CUSTOMER":
-                Customers customer = customerRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Customer not found"));
+                Customers customer = customerRepository.findByEmail(email)
+                        .orElseThrow(() -> new RuntimeException("Customer not found"));
 
                 String imageLink = azureBlobStorageService.uploadFile(file, "profilePicture");
                 customer.setPhotograph(imageLink);

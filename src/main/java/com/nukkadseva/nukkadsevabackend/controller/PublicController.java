@@ -21,31 +21,41 @@ import java.util.stream.Collectors;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/public/providers")
-@Slf4j
 public class PublicController {
 
-    private final ProviderService providerService;
+        private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(PublicController.class);
 
-    @GetMapping
-    public ResponseEntity<?> getProviders(
-            @RequestParam(required = false) String category,
-            @RequestParam(required = false) String city,
-            @RequestParam(required = false) String pincode,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "6") int limit
-    ) {
-        Page<DashboardProviderDto> providerPage = providerService.searchProviders(category, city, pincode, page, limit);
+        private final ProviderService providerService;
 
-// TODO: If provider filtering by "approved" status is needed, implement here.
+        @GetMapping
+        public ResponseEntity<?> getProviders(
+                        @RequestParam(required = false) String category,
+                        @RequestParam(required = false) String city,
+                        @RequestParam(required = false) String pincode,
+                        @RequestParam(defaultValue = "1") int page,
+                        @RequestParam(defaultValue = "6") int limit) {
+                Page<DashboardProviderDto> providerPage = providerService.searchProviders(category, city, pincode, page,
+                                limit);
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("providers", providerPage.getContent());
-        response.put("pagination", Map.of(
-                "currentPage", providerPage.getNumber() + 1,
-                "totalPages", providerPage.getTotalPages(),
-                "totalItems", providerPage.getTotalElements()
-        ));
+                // TODO: If provider filtering by "approved" status is needed, implement here.
 
-        return ResponseEntity.ok(response);
-    }
+                Map<String, Object> response = new HashMap<>();
+                response.put("providers", providerPage.getContent());
+                response.put("pagination", Map.of(
+                                "currentPage", providerPage.getNumber() + 1,
+                                "totalPages", providerPage.getTotalPages(),
+                                "totalItems", providerPage.getTotalElements()));
+
+                return ResponseEntity.ok(response);
+        }
+
+        @GetMapping("/cities")
+        public ResponseEntity<List<String>> getCities() {
+                return ResponseEntity.ok(providerService.getAllCities());
+        }
+
+        @GetMapping("/pincodes")
+        public ResponseEntity<List<String>> getPincodes(@RequestParam String city) {
+                return ResponseEntity.ok(providerService.getPincodesByCity(city));
+        }
 }

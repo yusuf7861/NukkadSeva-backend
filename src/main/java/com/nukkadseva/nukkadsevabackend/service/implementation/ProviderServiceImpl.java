@@ -47,10 +47,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Slf4j
 @RequiredArgsConstructor
 @Service
-public class ProviderServiceImpl implements ProviderService{
+public class ProviderServiceImpl implements ProviderService {
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ProviderServiceImpl.class);
 
     private final ProviderRepository providerRepository;
     private final UserRepository userRepository;
@@ -115,17 +116,20 @@ public class ProviderServiceImpl implements ProviderService{
         }
 
         if (providerDto.getQualification() != null && !providerDto.getQualification().isEmpty()) {
-            String qualificationUrl = azureBlobStorageService.uploadFile(providerDto.getQualification(), "qualification");
+            String qualificationUrl = azureBlobStorageService.uploadFile(providerDto.getQualification(),
+                    "qualification");
             provider.setQualification(qualificationUrl);
         }
 
         if (providerDto.getPoliceVerification() != null && !providerDto.getPoliceVerification().isEmpty()) {
-            String policeVerificationUrl = azureBlobStorageService.uploadFile(providerDto.getPoliceVerification(), "policeVerification");
+            String policeVerificationUrl = azureBlobStorageService.uploadFile(providerDto.getPoliceVerification(),
+                    "policeVerification");
             provider.setPoliceVerification(policeVerificationUrl);
         }
 
         if (providerDto.getProfilePicture() != null && !providerDto.getProfilePicture().isEmpty()) {
-            String profilePictureUrl = azureBlobStorageService.uploadFile(providerDto.getProfilePicture(), "profilePicture");
+            String profilePictureUrl = azureBlobStorageService.uploadFile(providerDto.getProfilePicture(),
+                    "profilePicture");
             provider.setProfilePicture(profilePictureUrl);
         }
 
@@ -283,7 +287,8 @@ public class ProviderServiceImpl implements ProviderService{
     }
 
     @Override
-    public Page<DashboardProviderDto> searchProviders(String category, String city, String pincode, int page, int limit) {
+    public Page<DashboardProviderDto> searchProviders(String category, String city, String pincode, int page,
+            int limit) {
         if (page < 1) {
             throw new IllegalArgumentException("Page number must be at least 1.");
         }
@@ -294,16 +299,19 @@ public class ProviderServiceImpl implements ProviderService{
 
         Specification<Provider> spec = (root, query, criteriaBuilder) -> {
             Predicate predicate = criteriaBuilder.conjunction();
-            predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("status"), ProviderStatus.APPROVED));
+            predicate = criteriaBuilder.and(predicate,
+                    criteriaBuilder.equal(root.get("status"), ProviderStatus.APPROVED));
 
             if (category != null && !category.isEmpty()) {
-                predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("serviceCategory"), category));
+                predicate = criteriaBuilder.and(predicate,
+                        criteriaBuilder.equal(root.get("serviceCategory"), category));
             }
             if (city != null && !city.isEmpty()) {
                 predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("city"), city));
             }
             if (pincode != null && !pincode.isEmpty()) {
-                predicate = criteriaBuilder.and(predicate, criteriaBuilder.like(root.get("serviceArea"), "%" + pincode + "%"));
+                predicate = criteriaBuilder.and(predicate,
+                        criteriaBuilder.like(root.get("serviceArea"), "%" + pincode + "%"));
             }
             return predicate;
         };
@@ -331,7 +339,6 @@ public class ProviderServiceImpl implements ProviderService{
             template.process(model, stringWriter);
             String htmlContent = stringWriter.toString();
 
-
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
@@ -339,7 +346,6 @@ public class ProviderServiceImpl implements ProviderService{
             helper.setSubject("NukkadSeva Provider Account Approved");
             helper.setText(htmlContent, true);
             mailSender.send(message);
-
 
         } catch (MessagingException e) {
             System.err.println("Failed to send approval email: " + e.getMessage());
@@ -363,7 +369,6 @@ public class ProviderServiceImpl implements ProviderService{
             StringWriter stringWriter = new StringWriter();
             template.process(model, stringWriter);
             String htmlContent = stringWriter.toString();
-
 
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
@@ -405,15 +410,16 @@ public class ProviderServiceImpl implements ProviderService{
     private static String getString(String token, Long providerId, String baseUrl) {
         String verificationLink = baseUrl + "/api/provider/verify-email?token=" + token + "&id=" + providerId;
 
-        String emailContent =
-            "<h2>NukkadSeva Email Verification</h2>" +
-            "<p>Thank you for registering as a service provider on NukkadSeva.</p>" +
-            "<p>Please verify your email by clicking the link below:</p>" +
-            "<p><a href=\"" + verificationLink + "\" style=\"background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;\">Verify Email</a></p>" +
-            "<p>Or copy and paste this link in your browser:</p>" +
-            "<p>" + verificationLink + "</p>" +
-            "<p>This link will expire in 24 hours.</p>" +
-            "<p>If you did not register, please ignore this email.</p>";
+        String emailContent = "<h2>NukkadSeva Email Verification</h2>" +
+                "<p>Thank you for registering as a service provider on NukkadSeva.</p>" +
+                "<p>Please verify your email by clicking the link below:</p>" +
+                "<p><a href=\"" + verificationLink
+                + "\" style=\"background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;\">Verify Email</a></p>"
+                +
+                "<p>Or copy and paste this link in your browser:</p>" +
+                "<p>" + verificationLink + "</p>" +
+                "<p>This link will expire in 24 hours.</p>" +
+                "<p>If you did not register, please ignore this email.</p>";
         return emailContent;
     }
 
@@ -448,7 +454,8 @@ public class ProviderServiceImpl implements ProviderService{
         log.info("Fetching provider details of ID: {}", id);
 
         try {
-            Provider provider = providerRepository.findById(id).orElseThrow(() -> new ProviderNotFoundException("Provider not found:"));
+            Provider provider = providerRepository.findById(id)
+                    .orElseThrow(() -> new ProviderNotFoundException("Provider not found:"));
 
             return providerMapper.toProviderDetailDto(provider);
         } catch (ProviderNotFoundException e) {
@@ -471,5 +478,15 @@ public class ProviderServiceImpl implements ProviderService{
     public Provider getProviderByEmail(String email) {
         return providerRepository.findByEmail(email)
                 .orElseThrow(() -> new ProviderNotFoundException("Provider not found with email: " + email));
+    }
+
+    @Override
+    public List<String> getAllCities() {
+        return providerRepository.findDistinctCityByStatus(ProviderStatus.APPROVED);
+    }
+
+    @Override
+    public List<String> getPincodesByCity(String city) {
+        return providerRepository.findDistinctPincodeByCityAndStatus(city, ProviderStatus.APPROVED);
     }
 }

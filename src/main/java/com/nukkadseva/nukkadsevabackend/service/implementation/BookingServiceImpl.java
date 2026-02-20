@@ -23,25 +23,27 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
-@Slf4j
 @Service
 @AllArgsConstructor
 public class BookingServiceImpl implements BookingService {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(BookingServiceImpl.class);
+
     private final CustomerRepository customerRepository;
     private final ProviderRepository providerRepository;
     private final BookingMapper bookingMapper;
-        private final BookingRepository bookingRepository;
-
+    private final BookingRepository bookingRepository;
 
     @Override
     @Transactional
     public void createBooking(BookingRequest bookingRequest, Authentication authentication) {
         String email = authentication.getName();
 
-        Customers customer = customerRepository.findByEmail(email).orElseThrow(() -> new CustomerNotFoundException("Customer not found"));
+        Customers customer = customerRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomerNotFoundException("Customer not found"));
 
-        Provider provider = providerRepository.findById(bookingRequest.getProviderId()).orElseThrow(() -> new ProviderNotFoundException("Provider not found"));
+        Provider provider = providerRepository.findById(bookingRequest.getProviderId())
+                .orElseThrow(() -> new ProviderNotFoundException("Provider not found"));
         if (provider == null) {
             log.error("Provider not found {}", bookingRequest.getProviderId());
         }

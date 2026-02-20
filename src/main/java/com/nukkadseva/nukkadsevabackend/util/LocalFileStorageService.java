@@ -13,10 +13,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
-@Slf4j
 @Service
 @ConditionalOnProperty(name = "storage.type", havingValue = "local", matchIfMissing = true)
 public class LocalFileStorageService implements AzureBlobStorageService {
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LocalFileStorageService.class);
 
     private final String uploadDir;
 
