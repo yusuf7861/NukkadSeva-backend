@@ -2,6 +2,7 @@ package com.nukkadseva.nukkadsevabackend.service.implementation;
 
 import com.nukkadseva.nukkadsevabackend.dto.request.CityWithPincodesRequest;
 import com.nukkadseva.nukkadsevabackend.dto.response.CityWithPincodesResponse;
+import com.nukkadseva.nukkadsevabackend.dto.response.PublicCityResponse;
 import com.nukkadseva.nukkadsevabackend.entity.City;
 import com.nukkadseva.nukkadsevabackend.entity.Pincode;
 import com.nukkadseva.nukkadsevabackend.repository.CityRepository;
@@ -69,7 +70,8 @@ public class CityServiceImpl implements CityService {
 
     @Override
     @Transactional
-    public CityWithPincodesResponse addPincodesToCity(Long cityId, List<CityWithPincodesRequest.PincodeRequest> pincodes) {
+    public CityWithPincodesResponse addPincodesToCity(Long cityId,
+            List<CityWithPincodesRequest.PincodeRequest> pincodes) {
         City city = cityRepository.findById(cityId)
                 .orElseThrow(() -> new RuntimeException("City not found with id: " + cityId));
 
@@ -108,6 +110,22 @@ public class CityServiceImpl implements CityService {
         return mapToResponse(updatedCity);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<PublicCityResponse> getActiveCitiesForPublic() {
+        List<City> activeCities = cityRepository.findByIsActiveTrue();
+        return activeCities.stream()
+                .map(city -> {
+                    List<PublicCityResponse.PincodeInfo> activePincodes = city.getPincodes().stream()
+                            .filter(p -> Boolean.TRUE.equals(p.getIsActive()))
+                            .map(p -> new PublicCityResponse.PincodeInfo(p.getPincode(), p.getAreaName()))
+                            .collect(Collectors.toList());
+
+                    return new PublicCityResponse(city.getCityName(), city.getState(), activePincodes);
+                })
+                .collect(Collectors.toList());
+    }
+
     private CityWithPincodesResponse mapToResponse(City city) {
         CityWithPincodesResponse response = new CityWithPincodesResponse();
         response.setId(city.getId());
@@ -132,4 +150,3 @@ public class CityServiceImpl implements CityService {
         return response;
     }
 }
-

@@ -32,4 +32,3 @@ public class CityWithPincodesRequest {
         private String areaName;
     }
 }
-

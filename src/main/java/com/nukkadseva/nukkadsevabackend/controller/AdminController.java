@@ -147,28 +147,6 @@ public class AdminController {
         }
     }
 
-    @GetMapping("/cities")
-    public ResponseEntity<List<CityWithPincodesResponse>> getAllCities() {
-        List<CityWithPincodesResponse> cities = cityService.getAllCitiesWithPincodes();
-        return ResponseEntity.ok(cities);
-    }
-
-    @GetMapping("/cities/{cityId}")
-    public ResponseEntity<?> getCityById(@PathVariable Long cityId) {
-        try {
-            CityWithPincodesResponse city = cityService.getCityWithPincodesById(cityId);
-            return ResponseEntity.ok(city);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(
-                Map.of(
-                    "success", false,
-                    "message", e.getMessage()
-                ),
-                HttpStatus.NOT_FOUND
-            );
-        }
-    }
-
     @PostMapping("/cities/{cityId}/pincodes")
     public ResponseEntity<?> addPincodesToCity(
             @PathVariable Long cityId,

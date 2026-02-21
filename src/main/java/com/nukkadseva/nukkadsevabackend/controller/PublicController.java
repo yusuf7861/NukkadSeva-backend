@@ -1,31 +1,25 @@
 package com.nukkadseva.nukkadsevabackend.controller;
 
-import com.nukkadseva.nukkadsevabackend.dto.PublicProviderDto;
 import com.nukkadseva.nukkadsevabackend.dto.response.DashboardProviderDto;
-import com.nukkadseva.nukkadsevabackend.entity.Provider;
+import com.nukkadseva.nukkadsevabackend.dto.response.PublicCityResponse;
+import com.nukkadseva.nukkadsevabackend.service.CityService;
 import com.nukkadseva.nukkadsevabackend.service.ProviderService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/public/providers")
 public class PublicController {
 
-        private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(PublicController.class);
-
         private final ProviderService providerService;
+        private final CityService cityService;
 
         @GetMapping
         public ResponseEntity<?> getProviders(
@@ -37,8 +31,6 @@ public class PublicController {
                 Page<DashboardProviderDto> providerPage = providerService.searchProviders(category, city, pincode, page,
                                 limit);
 
-                // TODO: If provider filtering by "approved" status is needed, implement here.
-
                 Map<String, Object> response = new HashMap<>();
                 response.put("providers", providerPage.getContent());
                 response.put("pagination", Map.of(
@@ -49,13 +41,13 @@ public class PublicController {
                 return ResponseEntity.ok(response);
         }
 
+        /**
+         * Public endpoint to fetch active cities with their active pincodes.
+         * Returns only essential fields: cityName, state, and pincodes (pincode,
+         * areaName).
+         */
         @GetMapping("/cities")
-        public ResponseEntity<List<String>> getCities() {
-                return ResponseEntity.ok(providerService.getAllCities());
-        }
-
-        @GetMapping("/pincodes")
-        public ResponseEntity<List<String>> getPincodes(@RequestParam String city) {
-                return ResponseEntity.ok(providerService.getPincodesByCity(city));
+        public ResponseEntity<List<PublicCityResponse>> getActiveCitiesWithPincodes() {
+                return ResponseEntity.ok(cityService.getActiveCitiesForPublic());
         }
 }
