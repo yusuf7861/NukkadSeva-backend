@@ -25,6 +25,8 @@ public class BookingResponseDto {
     private BigDecimal priceEstimate;
     private String note;
     private LocalDateTime createdAt;
+    private String completionOtp;
+    private String rejectionReason;
 
     private CustomerSummary customer;
     private ProviderSummary provider;

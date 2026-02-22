@@ -50,8 +50,28 @@ public class BookingController {
     public ResponseEntity<ApiResponse> respondToBooking(
             @PathVariable UUID id,
             @RequestParam String action,
+            @RequestParam(required = false) String reason,
             Authentication authentication) {
-        bookingService.respondToBooking(id, action, authentication);
+        bookingService.respondToBooking(id, action, reason, authentication);
         return ResponseEntity.ok(new ApiResponse("SUCCESS", "Booking action completed successfully"));
+    }
+
+    @PreAuthorize("hasRole('CUSTOMER')")
+    @PutMapping("/{id}/cancel")
+    public ResponseEntity<ApiResponse> cancelCustomerBooking(
+            @PathVariable UUID id,
+            Authentication authentication) {
+        bookingService.cancelCustomerBooking(id, authentication);
+        return ResponseEntity.ok(new ApiResponse("SUCCESS", "Booking cancelled successfully"));
+    }
+
+    @PreAuthorize("hasRole('SERVICE_PROVIDER')")
+    @PutMapping("/{id}/complete")
+    public ResponseEntity<ApiResponse> completeBookingWithOtp(
+            @PathVariable UUID id,
+            @RequestParam String otp,
+            Authentication authentication) {
+        bookingService.completeBookingWithOtp(id, otp, authentication);
+        return ResponseEntity.ok(new ApiResponse("SUCCESS", "Booking completed successfully"));
     }
 }

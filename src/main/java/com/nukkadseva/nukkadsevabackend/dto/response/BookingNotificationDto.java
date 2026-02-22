@@ -20,4 +20,6 @@ public class BookingNotificationDto {
     private String note;
     private String status;
     private String createdAt;
+    private String completionOtp;
+    private String rejectionReason;
 }

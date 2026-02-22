@@ -124,7 +124,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional
-    public void respondToBooking(UUID id, String action, Authentication authentication) {
+    public void respondToBooking(UUID id, String action, String reason, Authentication authentication) {
         String email = authentication.getName();
         Provider provider = providerRepository.findByEmail(email)
                 .orElseThrow(() -> new ProviderNotFoundException("Provider not found"));
@@ -138,9 +138,17 @@ public class BookingServiceImpl implements BookingService {
 
         if ("ACCEPT".equalsIgnoreCase(action)) {
             booking.setStatus(BookingStatus.APPROVED);
+            // Generate a 4-digit OTP for completion
+            String otp = String.format("%04d", new java.util.Random().nextInt(10000));
+            booking.setCompletionOtp(otp);
         } else if ("REJECT".equalsIgnoreCase(action) || "DECLINE".equalsIgnoreCase(action)) {
             booking.setStatus(BookingStatus.REJECTED);
+            if (reason != null && !reason.trim().isEmpty()) {
+                booking.setRejectionReason(reason.trim());
+            }
         } else if ("COMPLETE".equalsIgnoreCase(action)) {
+            // Note: Provider should now use completeBookingWithOtp instead, but we keep
+            // this for backwards compatibility or admin override.
             booking.setStatus(BookingStatus.COMPLETED);
             booking.setCompletedAt(LocalDateTime.now());
         } else {
@@ -148,6 +156,106 @@ public class BookingServiceImpl implements BookingService {
         }
 
         bookingRepository.save(booking);
+        sendCustomerNotification(booking);
+    }
+
+    @Override
+    @Transactional
+    public void cancelCustomerBooking(UUID id, Authentication authentication) {
+        String email = authentication.getName();
+        Customers customer = customerRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomerNotFoundException("Customer not found"));
+
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        if (!booking.getCustomer().getId().equals(customer.getId())) {
+            throw new RuntimeException("Unauthorized: You are not the customer for this booking");
+        }
+
+        if (booking.getStatus() == BookingStatus.COMPLETED || booking.getStatus() == BookingStatus.REJECTED
+                || booking.getStatus() == BookingStatus.CANCELLED) {
+            throw new RuntimeException("Booking cannot be cancelled in its current state");
+        }
+
+        booking.setStatus(BookingStatus.CANCELLED);
+        booking.setCancelledAt(LocalDateTime.now());
+        bookingRepository.save(booking);
+
+        // Notify provider that customer cancelled
+        sendProviderNotification(booking);
+        // Notify customer as well for UI updates
+        sendCustomerNotification(booking);
+    }
+
+    @Override
+    @Transactional
+    public void completeBookingWithOtp(UUID id, String otp, Authentication authentication) {
+        String email = authentication.getName();
+        Provider provider = providerRepository.findByEmail(email)
+                .orElseThrow(() -> new ProviderNotFoundException("Provider not found"));
+
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        if (!booking.getProvider().getId().equals(provider.getId())) {
+            throw new RuntimeException("Unauthorized: You are not the provider for this booking");
+        }
+
+        if (booking.getStatus() != BookingStatus.APPROVED) {
+            throw new RuntimeException("Booking must be APPROVED before it can be completed");
+        }
+
+        if (booking.getCompletionOtp() == null || !booking.getCompletionOtp().equals(otp.trim())) {
+            throw new RuntimeException("Invalid Completion OTP");
+        }
+
+        booking.setStatus(BookingStatus.COMPLETED);
+        booking.setCompletedAt(LocalDateTime.now());
+        bookingRepository.save(booking);
+
+        // Notify customer that the job was completed
+        sendCustomerNotification(booking);
+    }
+
+    private void sendProviderNotification(Booking booking) {
+        BookingNotificationDto notification = BookingNotificationDto.builder()
+                .bookingId(booking.getId().toString())
+                .customerName(booking.getCustomer().getFullName())
+                .serviceType(booking.getServiceType().name())
+                .bookingDateTime(booking.getBookingDateTime())
+                .priceEstimate(booking.getPriceEstimate() != null ? booking.getPriceEstimate().doubleValue() : null)
+                .note(booking.getNote())
+                .status(booking.getStatus().name())
+                .createdAt(booking.getCreatedAt() != null ? booking.getCreatedAt().toString()
+                        : LocalDateTime.now().toString())
+                .rejectionReason(booking.getRejectionReason())
+                .build();
+        messagingTemplate.convertAndSendToUser(
+                booking.getProvider().getEmail(),
+                "/queue/bookings",
+                notification);
+    }
+
+    private void sendCustomerNotification(Booking booking) {
+        BookingNotificationDto notification = BookingNotificationDto.builder()
+                .bookingId(booking.getId().toString())
+                .customerName(booking.getProvider().getFullName())
+                .serviceType(booking.getServiceType().name())
+                .bookingDateTime(booking.getBookingDateTime())
+                .priceEstimate(booking.getPriceEstimate() != null ? booking.getPriceEstimate().doubleValue() : null)
+                .note(booking.getNote())
+                .status(booking.getStatus().name())
+                .createdAt(booking.getCreatedAt() != null ? booking.getCreatedAt().toString()
+                        : LocalDateTime.now().toString())
+                .completionOtp(booking.getCompletionOtp())
+                .rejectionReason(booking.getRejectionReason())
+                .build();
+
+        messagingTemplate.convertAndSendToUser(
+                booking.getCustomer().getEmail(),
+                "/queue/customer-bookings",
+                notification);
     }
 
     private BookingResponseDto mapToBookingResponseDto(Booking booking) {
@@ -174,6 +282,8 @@ public class BookingServiceImpl implements BookingService {
                 .priceEstimate(booking.getPriceEstimate())
                 .note(booking.getNote())
                 .createdAt(booking.getCreatedAt())
+                .completionOtp(booking.getCompletionOtp())
+                .rejectionReason(booking.getRejectionReason())
                 .customer(customerSummary)
                 .provider(providerSummary)
                 .build();

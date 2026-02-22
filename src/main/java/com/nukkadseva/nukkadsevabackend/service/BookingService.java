@@ -13,5 +13,9 @@ public interface BookingService {
 
     List<BookingResponseDto> getProviderBookings(Authentication authentication);
 
-    void respondToBooking(UUID id, String action, Authentication authentication);
+    void respondToBooking(UUID id, String action, String reason, Authentication authentication);
+
+    void cancelCustomerBooking(UUID id, Authentication authentication);
+
+    void completeBookingWithOtp(UUID id, String otp, Authentication authentication);
 }
