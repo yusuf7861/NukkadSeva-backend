@@ -79,7 +79,8 @@ public class BookingServiceImpl implements BookingService {
                     .priceEstimate(booking.getPriceEstimate() != null ? booking.getPriceEstimate().doubleValue() : null)
                     .note(booking.getNote())
                     .status(booking.getStatus().name())
-                    .createdAt(booking.getCreatedAt().toString())
+                    .createdAt(booking.getCreatedAt() != null ? booking.getCreatedAt().toString()
+                            : LocalDateTime.now().toString())
                     .build();
 
             messagingTemplate.convertAndSendToUser(
@@ -89,11 +90,15 @@ public class BookingServiceImpl implements BookingService {
             log.info("Sent real-time notification to provider: {}", provider.getEmail());
 
         } catch (CustomerNotFoundException | ProviderNotFoundException e) {
+            log.error("Not found exception creating booking: {}", e.getMessage());
             throw e;
         } catch (DataAccessException e) {
+            log.error("Database error creating booking", e);
             throw new BookingCreationException("Booking failed due to database error!", e);
         } catch (Exception e) {
-            throw new BookingCreationException("An unexpected error occurred while creating the booking", e);
+            log.error("Unexpected error creating booking", e);
+            throw new BookingCreationException(
+                    "An unexpected error occurred while creating the booking: " + e.getMessage(), e);
         }
     }
 

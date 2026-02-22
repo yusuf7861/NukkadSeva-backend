@@ -8,13 +8,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 import java.util.UUID;
 import com.nukkadseva.nukkadsevabackend.dto.response.BookingResponseDto;
@@ -24,12 +21,14 @@ import com.nukkadseva.nukkadsevabackend.dto.response.BookingResponseDto;
 @RequiredArgsConstructor
 public class BookingController {
 
+    private static final Logger log = LoggerFactory.getLogger(BookingController.class);
     private final BookingService bookingService;
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping
     public ResponseEntity<ApiResponse> createBooking(@RequestBody BookingRequest bookingRequest,
             Authentication authentication) {
+        log.info("Received booking request: {}", bookingRequest);
         bookingService.createBooking(bookingRequest, authentication);
         return ResponseEntity.ok(new ApiResponse("CREATED", "Booking Completed Successfully"));
     }
