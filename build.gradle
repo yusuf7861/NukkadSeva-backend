@@ -36,7 +36,7 @@ dependencies {
     implementation 'org.liquibase:liquibase-core:4.20.0'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'org.springframework.boot:spring-boot-starter-freemarker'
-
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'org.mapstruct:mapstruct:1.5.5.Final'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     testImplementation 'org.springframework.security:spring-security-test'

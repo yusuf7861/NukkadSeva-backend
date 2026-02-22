@@ -4,11 +4,25 @@ import com.nukkadseva.nukkadsevabackend.dto.ApiError;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    // Re-throw Spring Security exceptions so they are handled by
+    // CustomAccessDeniedHandler / CustomAuthenticationEntryPoint
+    @ExceptionHandler(AccessDeniedException.class)
+    public void handleAccessDeniedException(AccessDeniedException e) throws AccessDeniedException {
+        throw e;
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public void handleAuthenticationException(AuthenticationException e) throws AuthenticationException {
+        throw e;
+    }
 
     @ExceptionHandler(EmailAlreadyExistsException.class)
     public ResponseEntity<ApiError> handleEmailAlreadyExistsException(EmailAlreadyExistsException e) {
@@ -52,7 +66,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BookingCreationException.class)
     public ResponseEntity<ApiError> handleBookingCreationException(BookingCreationException e) {
-        return buildErrorResponse("BOOKING_FAILED",  e.getMessage(), HttpStatus.BAD_REQUEST);
+        return buildErrorResponse("BOOKING_FAILED", e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(DataAccessException.class)

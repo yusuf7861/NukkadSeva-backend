@@ -12,6 +12,7 @@ import com.nukkadseva.nukkadsevabackend.exception.ProviderNotFoundException;
 import com.nukkadseva.nukkadsevabackend.mapper.ProviderMapper;
 import com.nukkadseva.nukkadsevabackend.repository.ProviderRepository;
 import com.nukkadseva.nukkadsevabackend.repository.UserRepository;
+import com.nukkadseva.nukkadsevabackend.repository.CityRepository;
 import com.nukkadseva.nukkadsevabackend.service.AzureBlobStorageService;
 import com.nukkadseva.nukkadsevabackend.service.ProviderService;
 import freemarker.template.Configuration;
@@ -55,6 +56,7 @@ public class ProviderServiceImpl implements ProviderService {
 
     private final ProviderRepository providerRepository;
     private final UserRepository userRepository;
+    private final CityRepository cityRepository;
     private final PasswordEncoder passwordEncoder;
     private final JavaMailSender mailSender;
     private final AzureBlobStorageService azureBlobStorageService;
@@ -478,15 +480,5 @@ public class ProviderServiceImpl implements ProviderService {
     public Provider getProviderByEmail(String email) {
         return providerRepository.findByEmail(email)
                 .orElseThrow(() -> new ProviderNotFoundException("Provider not found with email: " + email));
-    }
-
-    @Override
-    public List<String> getAllCities() {
-        return providerRepository.findDistinctCityByStatus(ProviderStatus.APPROVED);
-    }
-
-    @Override
-    public List<String> getPincodesByCity(String city) {
-        return providerRepository.findDistinctPincodeByCityAndStatus(city, ProviderStatus.APPROVED);
     }
 }

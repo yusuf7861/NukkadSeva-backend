@@ -45,8 +45,4 @@ public interface ProviderService {
     ProviderDetailDto getProviderByIdForAdmin(Long id);
 
     Provider getProviderByEmail(String email);
-
-    List<String> getAllCities();
-
-    List<String> getPincodesByCity(String city);
 }

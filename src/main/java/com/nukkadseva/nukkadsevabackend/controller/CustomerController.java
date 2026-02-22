@@ -22,6 +22,7 @@ import java.util.Map;
 public class CustomerController {
 
     private final CustomerService customerService;
+    private final com.nukkadseva.nukkadsevabackend.service.DashboardService dashboardService;
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> customerRegistration(@Valid @RequestBody UserRequest userRequest) {
@@ -40,8 +41,15 @@ public class CustomerController {
     }
 
     @PutMapping("/profile")
-    public ResponseEntity<?> updateCustomerProfile(@RequestBody CustomerProfileUpdateRequest request, @CurrentUser AuthUser user) {
+    public ResponseEntity<?> updateCustomerProfile(@RequestBody CustomerProfileUpdateRequest request,
+            @CurrentUser AuthUser user) {
         customerService.updateCustomerProfile(request, user.getEmail());
         return ResponseEntity.ok(Map.of("message", "Profile updated successfully"));
+    }
+
+    @GetMapping("/dashboard")
+    public ResponseEntity<com.nukkadseva.nukkadsevabackend.dto.response.CustomerDashboardDto> getDashboard(
+            org.springframework.security.core.Authentication authentication) {
+        return ResponseEntity.ok(dashboardService.getCustomerDashboard(authentication));
     }
 }
