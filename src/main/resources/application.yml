@@ -71,7 +71,8 @@ jwt:
     expiration: 86400000
 
 app:
-  base-url: ${APP_BASE_URL:http://10.38.28.45:8080}
+  # Change this base-url to your server's IP (e.g., http://10.38.28.45:8080) for email verification links
+  base-url: ${APP_BASE_URL:http://localhost:8080}
 
   #  datasource:
   #    url: jdbc:postgresql://aws-0-ap-south-1.pooler.supabase.com:5432/postgres?sslmode=require

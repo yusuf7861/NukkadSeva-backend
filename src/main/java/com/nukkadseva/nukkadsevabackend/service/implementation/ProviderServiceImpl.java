@@ -481,4 +481,12 @@ public class ProviderServiceImpl implements ProviderService {
         return providerRepository.findByEmail(email)
                 .orElseThrow(() -> new ProviderNotFoundException("Provider not found with email: " + email));
     }
+
+    @Override
+    @Transactional
+    public Provider updateServiceArea(String email, List<String> pincodes) {
+        Provider provider = getProviderByEmail(email);
+        provider.setServiceArea(String.join(",", pincodes));
+        return providerRepository.save(provider);
+    }
 }

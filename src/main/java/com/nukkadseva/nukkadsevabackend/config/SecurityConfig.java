@@ -34,6 +34,9 @@ public class SecurityConfig {
 
         private final AppUserDetailsService userDetailsService;
 
+        @org.springframework.beans.factory.annotation.Value("${app.base-url:http://localhost:8080}")
+        private String baseUrl;
+
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http,
                         JwtAuthenticationFilter jwtAuthenticationFilter, CustomAuthenticationEntryPoint entryPoint,
@@ -88,8 +91,9 @@ public class SecurityConfig {
                                 "http://localhost:5173",
                                 "http://localhost:9002",
                                 "http://localhost:3000",
-                                "http://10.38.28.45:8080",
-                                "http://10.38.28.45:3000",
+                                baseUrl,
+                                baseUrl.replace(":8080", ":3000"), // In case frontend is hosted on the same IP but port
+                                                                   // 3000
                                 "https://nukkad-seva.vercel.app/"));
                 config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
                 config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cookie"));

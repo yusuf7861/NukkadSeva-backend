@@ -45,4 +45,6 @@ public interface ProviderService {
     ProviderDetailDto getProviderByIdForAdmin(Long id);
 
     Provider getProviderByEmail(String email);
+
+    Provider updateServiceArea(String email, java.util.List<String> pincodes);
 }
