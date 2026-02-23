@@ -27,6 +27,8 @@ public class BookingResponseDto {
     private LocalDateTime createdAt;
     private String completionOtp;
     private String rejectionReason;
+    private boolean isReviewed;
+    private Integer rating;
 
     private CustomerSummary customer;
     private ProviderSummary provider;

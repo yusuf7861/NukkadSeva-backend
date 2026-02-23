@@ -16,7 +16,6 @@ import com.nukkadseva.nukkadsevabackend.repository.ProviderRepository;
 import com.nukkadseva.nukkadsevabackend.service.BookingService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -284,6 +283,8 @@ public class BookingServiceImpl implements BookingService {
                 .createdAt(booking.getCreatedAt())
                 .completionOtp(booking.getCompletionOtp())
                 .rejectionReason(booking.getRejectionReason())
+                .isReviewed(booking.getReview() != null)
+                .rating(booking.getReview() != null ? (int) booking.getReview().getRating() : null)
                 .customer(customerSummary)
                 .provider(providerSummary)
                 .build();

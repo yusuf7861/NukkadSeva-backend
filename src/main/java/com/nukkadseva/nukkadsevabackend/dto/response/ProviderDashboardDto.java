@@ -17,6 +17,22 @@ public class ProviderDashboardDto {
     private double averageRating;
     private long pendingRequestsCount;
     private List<PendingBookingItem> pendingBookings;
+    private List<ReviewResponseDto> recentReviews;
+    private List<PastServiceItem> recentPastServices;
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class PastServiceItem {
+        private String bookingId;
+        private String customerName;
+        private String serviceType;
+        private String bookingDateTime;
+        private BigDecimal finalPrice;
+        private String status;
+        private String completedAt;
+    }
 
     @Data
     @Builder

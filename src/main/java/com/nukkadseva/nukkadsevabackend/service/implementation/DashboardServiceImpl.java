@@ -2,6 +2,7 @@ package com.nukkadseva.nukkadsevabackend.service.implementation;
 
 import com.nukkadseva.nukkadsevabackend.dto.response.CustomerDashboardDto;
 import com.nukkadseva.nukkadsevabackend.dto.response.ProviderDashboardDto;
+import com.nukkadseva.nukkadsevabackend.dto.response.ReviewResponseDto;
 import com.nukkadseva.nukkadsevabackend.entity.Booking;
 import com.nukkadseva.nukkadsevabackend.entity.Customers;
 import com.nukkadseva.nukkadsevabackend.entity.Provider;
@@ -11,6 +12,7 @@ import com.nukkadseva.nukkadsevabackend.exception.ProviderNotFoundException;
 import com.nukkadseva.nukkadsevabackend.repository.BookingRepository;
 import com.nukkadseva.nukkadsevabackend.repository.CustomerRepository;
 import com.nukkadseva.nukkadsevabackend.repository.ProviderRepository;
+import com.nukkadseva.nukkadsevabackend.repository.ReviewRepository;
 import com.nukkadseva.nukkadsevabackend.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -27,6 +29,7 @@ public class DashboardServiceImpl implements DashboardService {
         private final CustomerRepository customerRepository;
         private final ProviderRepository providerRepository;
         private final BookingRepository bookingRepository;
+        private final ReviewRepository reviewRepository;
 
         @Override
         public CustomerDashboardDto getCustomerDashboard(Authentication authentication) {
@@ -50,27 +53,25 @@ public class DashboardServiceImpl implements DashboardService {
                                                                 : BigDecimal.ZERO))
                                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-                // Dummy value for now as Reviews aren't fully implemented yet
-                double averageRating = 4.5;
+                Double avgRatingResult = reviewRepository.getAverageRatingForCustomer(customer.getId());
+                double averageRating = avgRatingResult != null ? Math.round(avgRatingResult * 10.0) / 10.0 : 0.0;
 
                 // Take top 5 recent bookings
                 List<CustomerDashboardDto.BookingItem> recentBookings = allBookings.stream()
                                 .limit(5)
-                                .map(b -> {
-                                        return CustomerDashboardDto.BookingItem.builder()
-                                                        .id(b.getId().toString())
-                                                        .serviceName(b.getServiceType() != null
-                                                                        ? b.getServiceType().name()
-                                                                        : "")
-                                                        .providerName(b.getProvider().getFullName())
-                                                        .bookingDate(b.getBookingDateTime() != null
-                                                                        ? b.getBookingDateTime().toString()
-                                                                        : "")
-                                                        .status(b.getStatus() != null ? b.getStatus().name() : "")
-                                                        .amount(b.getFinalPrice() != null ? b.getFinalPrice()
-                                                                        : b.getPriceEstimate())
-                                                        .build();
-                                })
+                                .map(b -> CustomerDashboardDto.BookingItem.builder()
+                                                .id(b.getId().toString())
+                                                .serviceName(b.getServiceType() != null
+                                                                ? b.getServiceType().name()
+                                                                : "")
+                                                .providerName(b.getProvider().getFullName())
+                                                .bookingDate(b.getBookingDateTime() != null
+                                                                ? b.getBookingDateTime().toString()
+                                                                : "")
+                                                .status(b.getStatus() != null ? b.getStatus().name() : "")
+                                                .amount(b.getFinalPrice() != null ? b.getFinalPrice()
+                                                                : b.getPriceEstimate())
+                                                .build())
                                 .collect(Collectors.toList());
 
                 return CustomerDashboardDto.builder()
@@ -126,8 +127,47 @@ public class DashboardServiceImpl implements DashboardService {
 
                 long pendingRequestsCount = pendingBookings.size();
 
-                // Dummy value for now as Reviews aren't fully implemented yet
-                double averageRating = 4.8;
+                Double avgRatingResult = reviewRepository.getAverageRatingForProvider(provider.getId());
+                double averageRating = avgRatingResult != null ? Math.round(avgRatingResult * 10.0) / 10.0 : 0.0;
+
+                // Fetch Recent Past Services (up to 3 completed)
+                List<ProviderDashboardDto.PastServiceItem> recentPastServices = allBookings.stream()
+                                .filter(b -> b.getStatus() == BookingStatus.COMPLETED)
+                                .limit(3)
+                                .map(b -> ProviderDashboardDto.PastServiceItem.builder()
+                                                .bookingId(b.getId().toString())
+                                                .customerName(b.getCustomer().getFullName())
+                                                .serviceType(b.getServiceType() != null ? b.getServiceType().name()
+                                                                : "")
+                                                .bookingDateTime(b.getBookingDateTime() != null
+                                                                ? b.getBookingDateTime().toString()
+                                                                : "")
+                                                .finalPrice(b.getFinalPrice())
+                                                .status(b.getStatus() != null ? b.getStatus().name() : "")
+                                                // Using updated at or created at as a proxy for completed at for now
+                                                .completedAt(b.getUpdatedAt() != null ? b.getUpdatedAt().toString()
+                                                                : (b.getCreatedAt() != null
+                                                                                ? b.getCreatedAt().toString()
+                                                                                : ""))
+                                                .build())
+                                .collect(Collectors.toList());
+
+                // Fetch Recent Reviews (up to 3)
+                List<ReviewResponseDto> recentReviews = reviewRepository
+                                .findByProviderIdOrderByCreatedAtDesc(provider.getId())
+                                .stream()
+                                .limit(3)
+                                .map(r -> com.nukkadseva.nukkadsevabackend.dto.response.ReviewResponseDto.builder()
+                                                .id(r.getId())
+                                                .bookingId(r.getBooking().getId())
+                                                .customerId(r.getCustomer().getId())
+                                                .customerName(r.getCustomer().getFullName())
+                                                .providerId(r.getProvider().getId())
+                                                .rating(r.getRating())
+                                                .comment(r.getComment())
+                                                .createdAt(r.getCreatedAt())
+                                                .build())
+                                .collect(Collectors.toList());
 
                 return ProviderDashboardDto.builder()
                                 .totalEarnings(totalEarnings)
@@ -135,6 +175,8 @@ public class DashboardServiceImpl implements DashboardService {
                                 .pendingRequestsCount(pendingRequestsCount)
                                 .pendingBookings(pendingBookings)
                                 .averageRating(averageRating)
+                                .recentReviews(recentReviews)
+                                .recentPastServices(recentPastServices)
                                 .build();
         }
 }
