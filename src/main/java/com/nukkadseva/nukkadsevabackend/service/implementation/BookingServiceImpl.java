@@ -9,8 +9,10 @@ import com.nukkadseva.nukkadsevabackend.entity.enums.PaymentStatus;
 import com.nukkadseva.nukkadsevabackend.exception.BookingCreationException;
 import com.nukkadseva.nukkadsevabackend.exception.CustomerNotFoundException;
 import com.nukkadseva.nukkadsevabackend.exception.ProviderNotFoundException;
+import com.nukkadseva.nukkadsevabackend.entity.CustomerAddress;
 import com.nukkadseva.nukkadsevabackend.mapper.BookingMapper;
 import com.nukkadseva.nukkadsevabackend.repository.BookingRepository;
+import com.nukkadseva.nukkadsevabackend.repository.CustomerAddressRepository;
 import com.nukkadseva.nukkadsevabackend.repository.CustomerRepository;
 import com.nukkadseva.nukkadsevabackend.repository.ProviderRepository;
 import com.nukkadseva.nukkadsevabackend.service.BookingService;
@@ -39,6 +41,7 @@ public class BookingServiceImpl implements BookingService {
     private final ProviderRepository providerRepository;
     private final BookingMapper bookingMapper;
     private final BookingRepository bookingRepository;
+    private final CustomerAddressRepository customerAddressRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
     @Override
@@ -55,9 +58,13 @@ public class BookingServiceImpl implements BookingService {
             log.error("Provider not found {}", bookingRequest.getProviderId());
         }
 
+        CustomerAddress address = customerAddressRepository.findByIdAndCustomer(bookingRequest.getAddressId(), customer)
+                .orElseThrow(() -> new CustomerNotFoundException("Address not found or doesn't belong to customer"));
+
         Booking booking = bookingMapper.toEntity(bookingRequest);
         booking.setCustomer(customer);
         booking.setProvider(provider);
+        booking.setServiceAddress(address.buildFormattedAddress());
 
         if (bookingRequest.getBookingDateTime().isAfter(LocalDateTime.now().plusDays(7))) {
             throw new BookingCreationException("Booking cannot be scheduled more than 7 days in advance.");

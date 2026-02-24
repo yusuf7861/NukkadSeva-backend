@@ -86,6 +86,9 @@ public class Booking {
     @Column(name = "rejection_reason", columnDefinition = "TEXT")
     private String rejectionReason;
 
+    @Column(name = "service_address", columnDefinition = "TEXT")
+    private String serviceAddress;
+
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "review_id", unique = true)
     private Review review;
