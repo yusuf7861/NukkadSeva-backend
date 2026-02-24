@@ -54,6 +54,8 @@ public class SecurityConfig {
                                                                                 "/api/public/**",
                                                                                 "/api/services/search",
                                                                                 "/api/logout",
+                                                                                "/api/forgot-password",
+                                                                                "/api/reset-password",
                                                                                 "/api/provider/verify-email",
                                                                                 "/api/verify-email",
                                                                                 "/ws/**",

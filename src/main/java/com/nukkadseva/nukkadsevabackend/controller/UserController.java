@@ -14,6 +14,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import com.nukkadseva.nukkadsevabackend.dto.ApiResponse;
+import com.nukkadseva.nukkadsevabackend.dto.request.ForgotPasswordRequest;
+import com.nukkadseva.nukkadsevabackend.dto.request.ResetPasswordRequest;
 import com.nukkadseva.nukkadsevabackend.dto.request.UserRequest;
 import com.nukkadseva.nukkadsevabackend.dto.response.AuthResponse;
 import com.nukkadseva.nukkadsevabackend.service.UserService;
@@ -77,6 +79,19 @@ public class UserController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(response);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        userService.generateResetOtp(request);
+        return ResponseEntity.ok(new ApiResponse("OTP_SENT", "If the email is registered, an OTP has been sent."));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        userService.resetPassword(request);
+        return ResponseEntity
+                .ok(new ApiResponse("PASSWORD_RESET_SUCCESS", "Your password has been reset successfully."));
     }
 
     @PutMapping("/update-profile-picture")
