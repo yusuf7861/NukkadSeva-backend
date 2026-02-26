@@ -72,6 +72,16 @@ public class ProviderController {
         return new ResponseEntity<>(rejectedProvider, HttpStatus.OK);
     }
 
+    @GetMapping("/verify-email")
+    public ResponseEntity<String> verifyProviderEmail(@RequestParam String token) {
+        boolean verified = providerService.verifyProviderEmail(token);
+        if (verified) {
+            return new ResponseEntity<>("Email verified successfully. Your application is now pending admin approval.", HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("Invalid or expired verification token.", HttpStatus.BAD_REQUEST);
+        }
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<Provider> getProviderById(@PathVariable Long id) {
@@ -80,14 +90,15 @@ public class ProviderController {
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @PreAuthorize("hasRole('SERVICE_PROVIDER')")
-    @PostMapping("/verify-email")
-    public ResponseEntity<String> verifyProviderEmail(@RequestParam String token) {
-        boolean verified = providerService.verifyProviderEmail(token);
-        if (verified) {
-            return new ResponseEntity<>("Email verified successfully. Your application is now pending admin approval.", HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>("Invalid or expired verification token.", HttpStatus.BAD_REQUEST);
+    @GetMapping("/profile")
+    public ResponseEntity<?> getProfile() {
+        try {
+            org.springframework.security.core.Authentication authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+            String email = authentication.getName();
+            Provider provider = providerService.getProviderByEmail(email);
+            return new ResponseEntity<>(provider, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("message", "Failed to fetch profile: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

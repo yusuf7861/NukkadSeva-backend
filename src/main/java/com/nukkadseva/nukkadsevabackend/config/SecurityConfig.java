@@ -49,8 +49,7 @@ public class SecurityConfig {
                                         "/api/public/**",
                                         "/api/logout",
                                         "/api/provider/verify-email",
-                                        "/api/send-verification-otp",
-                                        "/api/verify-otp",
+                                        "/api/verify-email",
                                         // Swagger endpoints
                                         "/v3/api-docs/**",
                                         "/swagger-ui/**",
@@ -88,6 +87,7 @@ public class SecurityConfig {
                 "http://localhost:5174",
                 "http://localhost:5173",
                 "http://localhost:9002",
+                "http://localhost:3000",
                 "https://nukkad-seva.vercel.app/"
                 ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));

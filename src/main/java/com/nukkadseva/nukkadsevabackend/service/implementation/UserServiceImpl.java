@@ -1,10 +1,6 @@
 package com.nukkadseva.nukkadsevabackend.service.implementation;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.security.SecureRandom;
-import java.util.HashMap;
-import java.util.Map;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import com.nukkadseva.nukkadsevabackend.dto.response.AuthResponse;
@@ -12,10 +8,10 @@ import com.nukkadseva.nukkadsevabackend.entity.Customers;
 import com.nukkadseva.nukkadsevabackend.entity.Provider;
 import com.nukkadseva.nukkadsevabackend.repository.ProviderRepository;
 import com.nukkadseva.nukkadsevabackend.service.AzureBlobStorageService;
+import com.nukkadseva.nukkadsevabackend.service.UserService;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -24,27 +20,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import com.nukkadseva.nukkadsevabackend.dto.request.UserRequest;
-import com.nukkadseva.nukkadsevabackend.dto.request.VerifyOtpRequest;
 import com.nukkadseva.nukkadsevabackend.entity.Users;
-import com.nukkadseva.nukkadsevabackend.exception.EmailAlreadyExistsException;
-import com.nukkadseva.nukkadsevabackend.exception.InvalidOtpException;
 import com.nukkadseva.nukkadsevabackend.exception.UserAuthenticationException;
-import com.nukkadseva.nukkadsevabackend.security.JwtOtpUtil;
 import com.nukkadseva.nukkadsevabackend.security.JwtUtil;
 import com.nukkadseva.nukkadsevabackend.repository.CustomerRepository;
 import com.nukkadseva.nukkadsevabackend.repository.UserRepository;
-import com.nukkadseva.nukkadsevabackend.util.AppUserDetailsService;
-import com.nukkadseva.nukkadsevabackend.service.UserService;
 
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
-import lombok.RequiredArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
@@ -56,11 +37,7 @@ public class UserServiceImpl implements UserService {
     private final CustomerRepository customerRepository;
     private final AuthenticationManager authenticationManager;
     private final ProviderRepository providerRepository;
-    private final AppUserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
-    private final JwtOtpUtil jwtOtpUtil;
-    private final JavaMailSender javaMailSender;
-    private final Configuration freemarkerConfig;
     private final AzureBlobStorageService azureBlobStorageService;
 
 
@@ -76,19 +53,30 @@ public class UserServiceImpl implements UserService {
             );
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            String token = jwtUtil.generateToken(userDetails);
 
-            String role = authentication.getAuthorities()
-                    .stream()
-                    .map(GrantedAuthority::getAuthority)
-                    .findFirst()
-                    .orElse("USER");
+            // Fetch user to get ID and profile info
+            Users user = userRepository.findByEmail(userDetails.getUsername())
+                    .orElseThrow(() -> new UserAuthenticationException("User not found"));
 
-            return new AuthResponse(
-                    token,
-                    userDetails.getUsername(),
-                    role
-            );
+            // Block login if user is not verified
+            if (!user.isVerified()) {
+                throw new UserAuthenticationException("Please verify your email before logging in");
+            }
+
+            // Get role without ROLE_ prefix for JWT
+            String role = user.getRole().name();
+
+            // Get profile ID based on role (customer or provider)
+            Long profileId = getProfileId(user);
+
+            // Generate token with user claims
+            String token = jwtUtil.generateToken(user.getId(), user.getEmail(), role, profileId);
+
+            return AuthResponse.builder()
+                    .accessToken(token)
+                    .refreshToken(null) // TODO: Implement refresh token
+                    .tokenType("Bearer")
+                    .build();
 
         } catch (BadCredentialsException e) {
             log.warn("Failed login attempt for email: {}", userRequest.getEmail());
@@ -103,58 +91,34 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    @Override
-    public String sendVerificationOtp(String email) throws MessagingException, IOException, TemplateException {
-        Optional<Users> byEmail = userRepository.findByEmail(email);
 
-        if (byEmail.isPresent()) {
-            throw new EmailAlreadyExistsException("Email already exists");
+    private Long getProfileId(Users user) {
+        if (user.getCustomers() != null) {
+            return user.getCustomers().getId();
+        } else if (user.getProvider() != null) {
+            return user.getProvider().getId();
         }
-        SecureRandom secureRandom = new SecureRandom();
-        String resetOtp = String.format("%06d", secureRandom.nextInt(1_000_000));
-        String token = jwtOtpUtil.generateOtpToken(email, resetOtp, 10);
-
-        Map<String, Object> model = new HashMap<>();
-        model.put("email", email);
-        model.put("otp", resetOtp);
-        Template template;
-
-        template = freemarkerConfig.getTemplate("user-verification-otp.html");
-
-        StringWriter stringWriter = new StringWriter();
-
-        template.process(model, stringWriter);
-
-        String htmlContent = stringWriter.toString();
-
-        MimeMessage message = javaMailSender.createMimeMessage();
-
-        MimeMessageHelper helper;
-
-        helper = new MimeMessageHelper(message, true);
-        helper.setTo(email);
-        helper.setFrom("yjamal710@gmail.com");
-        helper.setSubject("Account Verification OTP - NukkadSeva");
-        helper.setText(htmlContent, true);
-        javaMailSender.send(message);
-
-        return token;
+        return null;
     }
 
     @Override
-    public boolean verifyOtp(VerifyOtpRequest request) {
-        try {
-            Claims claims = jwtOtpUtil.validateTokenAndGetClaims(request.getToken());
-            String otpFromToken = (String) claims.get("otp");
-
-            if (!request.getOtp().equals(otpFromToken)) {
-                throw new InvalidOtpException("OTP does not match");
-            }
-
-            return true;
-        } catch (ExpiredJwtException | MalformedJwtException jwtException) {
-            throw new InvalidOtpException("OTP token is invalid or expired.");
+    public boolean verifyEmail(String token) {
+        Optional<Users> userOpt = userRepository.findByVerificationToken(token);
+        if (userOpt.isEmpty()) {
+            return false;
         }
+        Users user = userOpt.get();
+        if (user.isVerified()) {
+            return true;
+        }
+        if (user.getTokenExpiresAt() != null && user.getTokenExpiresAt().isBefore(LocalDateTime.now())) {
+            return false;
+        }
+        user.setVerified(true);
+        user.setVerificationToken(null);
+        user.setTokenExpiresAt(null);
+        userRepository.save(user);
+        return true;
     }
 
     @Transactional

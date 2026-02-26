@@ -33,4 +33,5 @@ public interface ProviderService {
     void notifyAdminsOfNewVerifiedProvider(Provider provider);
     List<ProviderSummaryDto> getAllProvidersForAdmin();
     ProviderDetailDto getProviderByIdForAdmin(Long id);
+    Provider getProviderByEmail(String email);
 }

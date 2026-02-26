@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.service.spi.ServiceException;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -58,6 +59,9 @@ public class ProviderServiceImpl implements ProviderService{
     private final AzureBlobStorageService azureBlobStorageService;
     private final Configuration freemarkerConfiguration;
     private final ProviderMapper providerMapper;
+
+    @Value("${app.base-url:http://localhost:8080}")
+    private String baseUrl;
 
     private static final String CHAR_LOWER = "abcdefghijklmnopqrstuvwxyz";
     private static final String CHAR_UPPER = CHAR_LOWER.toUpperCase();
@@ -387,8 +391,6 @@ public class ProviderServiceImpl implements ProviderService{
             helper.setTo(email);
             helper.setSubject("NukkadSeva Provider Email Verification");
 
-            // Use localhost for local development, can be configured for production
-            String baseUrl = "http://localhost:9002"; // Frontend URL for local development
             String emailContent = getString(token, providerId, baseUrl);
 
             helper.setText(emailContent, true);
@@ -401,7 +403,7 @@ public class ProviderServiceImpl implements ProviderService{
 
     @NotNull
     private static String getString(String token, Long providerId, String baseUrl) {
-        String verificationLink = baseUrl + "/verify-email?token=" + token + "&id=" + providerId;
+        String verificationLink = baseUrl + "/api/provider/verify-email?token=" + token + "&id=" + providerId;
 
         String emailContent =
             "<h2>NukkadSeva Email Verification</h2>" +
@@ -463,5 +465,11 @@ public class ProviderServiceImpl implements ProviderService{
      */
     private String generateSecureToken() {
         return java.util.UUID.randomUUID().toString();
+    }
+
+    @Override
+    public Provider getProviderByEmail(String email) {
+        return providerRepository.findByEmail(email)
+                .orElseThrow(() -> new ProviderNotFoundException("Provider not found with email: " + email));
     }
 }

@@ -47,6 +47,7 @@ public class RootAdminInitializer implements CommandLineRunner {
             rootAdmin.setEmail("yjamal12feb@gmail.com");
             rootAdmin.setPassword(passwordEncoder.encode(password));
             rootAdmin.setRole(Role.ADMIN);
+            rootAdmin.setVerified(true);
             sendRootAdminCredentialsEmail(rootAdmin.getEmail(), rootAdmin.getEmail(), password);
 
             userRepository.save(rootAdmin);
