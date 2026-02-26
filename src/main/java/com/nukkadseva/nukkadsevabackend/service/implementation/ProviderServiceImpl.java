@@ -213,25 +213,31 @@ public class ProviderServiceImpl implements ProviderService {
             provider.setStatus(ProviderStatus.APPROVED);
             provider.setIsApproved(true);
 
-            // Generate a secure random password
-            String generatedPassword = generateSecurePassword();
-
-            // Create a corresponding User for the approved provider (owning side holds FK)
-            Users user = new Users();
-            user.setEmail(provider.getEmail());
-            user.setPassword(passwordEncoder.encode(generatedPassword));
-            user.setRole(Role.SERVICE_PROVIDER);
-            user.setVerified(true);
-
-            user.setProvider(provider);
-            provider.setUser(user);
-
-            userRepository.save(user);
-            Provider savedProvider = providerRepository.save(provider);
-
-            sendProviderApprovalEmail(provider.getEmail(), generatedPassword);
-
-            return savedProvider;
+            Optional<Users> existingUser = userRepository.findByEmail(provider.getEmail());
+            Users user;
+            if (existingUser.isPresent()) {
+                user = existingUser.get();
+                user.setRole(Role.SERVICE_PROVIDER);
+                user.setProvider(provider);
+                provider.setUser(user);
+                userRepository.save(user);
+                Provider savedProvider = providerRepository.save(provider);
+                sendProviderApprovalEmail(provider.getEmail(), "(Your existing account password)");
+                return savedProvider;
+            } else {
+                String generatedPassword = generateSecurePassword();
+                user = new Users();
+                user.setEmail(provider.getEmail());
+                user.setPassword(passwordEncoder.encode(generatedPassword));
+                user.setRole(Role.SERVICE_PROVIDER);
+                user.setVerified(true);
+                user.setProvider(provider);
+                provider.setUser(user);
+                userRepository.save(user);
+                Provider savedProvider = providerRepository.save(provider);
+                sendProviderApprovalEmail(provider.getEmail(), generatedPassword);
+                return savedProvider;
+            }
         } catch (IOException | TemplateException e) {
             throw new RuntimeException(e);
         }

@@ -1,7 +1,6 @@
 package com.nukkadseva.nukkadsevabackend.controller;
 
 import com.nukkadseva.nukkadsevabackend.dto.request.ReviewRequestDto;
-import com.nukkadseva.nukkadsevabackend.dto.ApiResponse;
 import com.nukkadseva.nukkadsevabackend.service.ReviewService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.GetMapping;
-import com.nukkadseva.nukkadsevabackend.dto.ApiResponse;
 import com.nukkadseva.nukkadsevabackend.dto.response.ReviewResponseDto;
 
 @RestController

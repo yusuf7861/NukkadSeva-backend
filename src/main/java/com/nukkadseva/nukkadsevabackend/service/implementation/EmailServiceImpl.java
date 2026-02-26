@@ -44,7 +44,7 @@ public class EmailServiceImpl implements EmailService {
 
         } catch (Exception e) {
             log.error("Failed to send forgot password email to {}", to, e);
-            throw new RuntimeException("Failed to send email");
+            throw new RuntimeException("Failed to send email", e);
         }
     }
 }

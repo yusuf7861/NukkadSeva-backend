@@ -7,11 +7,10 @@ import com.nukkadseva.nukkadsevabackend.entity.Address;
 import com.nukkadseva.nukkadsevabackend.entity.CustomerAddress;
 import com.nukkadseva.nukkadsevabackend.entity.Customers;
 import com.nukkadseva.nukkadsevabackend.entity.Users;
+import com.nukkadseva.nukkadsevabackend.entity.enums.BookingStatus;
 import com.nukkadseva.nukkadsevabackend.entity.enums.Role;
 import com.nukkadseva.nukkadsevabackend.exception.EmailAlreadyExistsException;
-import com.nukkadseva.nukkadsevabackend.repository.CustomerAddressRepository;
-import com.nukkadseva.nukkadsevabackend.repository.CustomerRepository;
-import com.nukkadseva.nukkadsevabackend.repository.UserRepository;
+import com.nukkadseva.nukkadsevabackend.repository.*;
 import com.nukkadseva.nukkadsevabackend.service.CustomerService;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -44,6 +43,8 @@ public class CustomerServiceImpl implements CustomerService {
     private final UserRepository userRepository;
     private final CustomerRepository customerRepository;
     private final CustomerAddressRepository customerAddressRepository;
+    private final BookingRepository bookingRepository;
+    private final ReviewRepository reviewRepository;
     private final PasswordEncoder passwordEncoder;
     private final JavaMailSender mailSender;
     private final Configuration freemarkerConfig;
@@ -100,8 +101,14 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public Customers getCustomerProfile(String email) {
-        return customerRepository.findByEmail(email)
+        Customers customer = customerRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Customer not found with email: " + email));
+
+        customer.setActiveBookingsCount(bookingRepository.countByCustomerIdAndStatusIn(customer.getId(),
+                List.of(BookingStatus.PENDING, BookingStatus.APPROVED)));
+        customer.setReviewsGivenCount(reviewRepository.countByCustomerId(customer.getId()));
+
+        return customer;
     }
 
     @Override

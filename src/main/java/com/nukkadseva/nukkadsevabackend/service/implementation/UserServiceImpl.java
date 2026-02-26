@@ -174,7 +174,7 @@ public class UserServiceImpl implements UserService {
         }
 
         // Generate 6-digit OTP
-        String otp = String.format("%06d", new java.util.Random().nextInt(999999));
+        String otp = String.format("%06d", new java.security.SecureRandom().nextInt(999999));
 
         user.setVerificationToken(otp);
         user.setTokenExpiresAt(LocalDateTime.now().plusMinutes(15));

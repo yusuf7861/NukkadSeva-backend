@@ -62,4 +62,10 @@ public class Customers {
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CustomerAddress> savedAddresses;
+
+    @Transient
+    private Long activeBookingsCount;
+
+    @Transient
+    private Long reviewsGivenCount;
 }

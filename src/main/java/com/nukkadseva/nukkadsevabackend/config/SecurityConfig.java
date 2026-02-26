@@ -5,6 +5,7 @@ import com.nukkadseva.nukkadsevabackend.security.CustomAuthenticationEntryPoint;
 import com.nukkadseva.nukkadsevabackend.security.JwtAuthenticationFilter;
 import com.nukkadseva.nukkadsevabackend.util.AppUserDetailsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -34,7 +35,7 @@ public class SecurityConfig {
 
         private final AppUserDetailsService userDetailsService;
 
-        @org.springframework.beans.factory.annotation.Value("${app.base-url:http://localhost:8080}")
+        @Value("${app.base-url:http://localhost:8080}")
         private String baseUrl;
 
         @Bean
@@ -88,15 +89,7 @@ public class SecurityConfig {
 
         private UrlBasedCorsConfigurationSource corsConfigurationSource() {
                 CorsConfiguration config = new CorsConfiguration();
-                config.setAllowedOrigins(List.of(
-                                "http://localhost:5174",
-                                "http://localhost:5173",
-                                "http://localhost:9002",
-                                "http://localhost:3000",
-                                baseUrl,
-                                baseUrl.replace(":8080", ":3000"), // In case frontend is hosted on the same IP but port
-                                                                   // 3000
-                                "https://nukkad-seva.vercel.app/"));
+                config.setAllowedOriginPatterns(List.of("*"));
                 config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
                 config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cookie"));
                 config.setAllowCredentials(true);

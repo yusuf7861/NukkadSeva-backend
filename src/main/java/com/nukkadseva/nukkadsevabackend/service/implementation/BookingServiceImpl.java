@@ -66,6 +66,9 @@ public class BookingServiceImpl implements BookingService {
         booking.setProvider(provider);
         booking.setServiceAddress(address.buildFormattedAddress());
 
+        if (bookingRequest.getBookingDateTime().isBefore(LocalDateTime.now())) {
+            throw new BookingCreationException("Booking cannot be scheduled in the past.");
+        }
         if (bookingRequest.getBookingDateTime().isAfter(LocalDateTime.now().plusDays(7))) {
             throw new BookingCreationException("Booking cannot be scheduled more than 7 days in advance.");
         }
@@ -145,7 +148,7 @@ public class BookingServiceImpl implements BookingService {
         if ("ACCEPT".equalsIgnoreCase(action)) {
             booking.setStatus(BookingStatus.APPROVED);
             // Generate a 4-digit OTP for completion
-            String otp = String.format("%04d", new java.util.Random().nextInt(10000));
+            String otp = String.format("%04d", new java.security.SecureRandom().nextInt(10000));
             booking.setCompletionOtp(otp);
         } else if ("REJECT".equalsIgnoreCase(action) || "DECLINE".equalsIgnoreCase(action)) {
             booking.setStatus(BookingStatus.REJECTED);

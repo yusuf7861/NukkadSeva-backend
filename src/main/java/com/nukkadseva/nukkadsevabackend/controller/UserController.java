@@ -39,7 +39,7 @@ public class UserController {
 
         ResponseCookie cookie = ResponseCookie.from("jwt", login.getAccessToken())
                 .httpOnly(true)
-                .secure(false) // TODO: make true at the time of deployment
+                .secure(true) // Required for SameSite="none"
                 .path("/")
                 .maxAge(Duration.ofDays(1))
                 .sameSite("none")
@@ -113,7 +113,7 @@ public class UserController {
     @PostMapping("/debug-login")
     public ResponseEntity<String> debugLogin(@Valid @RequestBody UserRequest userRequest) {
         try {
-            Authentication authentication = org.springframework.security.core.context.SecurityContextHolder.getContext()
+            SecurityContextHolder.getContext()
                     .getAuthentication();
             userService.login(userRequest);
             return ResponseEntity.ok("Login Successful");
