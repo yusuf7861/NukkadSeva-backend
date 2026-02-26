@@ -7,11 +7,15 @@ import com.nukkadseva.nukkadsevabackend.dto.response.AuthResponse;
 import com.nukkadseva.nukkadsevabackend.entity.Customers;
 import com.nukkadseva.nukkadsevabackend.entity.Provider;
 import com.nukkadseva.nukkadsevabackend.repository.ProviderRepository;
+import com.nukkadseva.nukkadsevabackend.dto.request.ForgotPasswordRequest;
+import com.nukkadseva.nukkadsevabackend.dto.request.ResetPasswordRequest;
+import com.nukkadseva.nukkadsevabackend.service.EmailService;
 import com.nukkadseva.nukkadsevabackend.service.AzureBlobStorageService;
 import com.nukkadseva.nukkadsevabackend.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -22,6 +26,8 @@ import org.springframework.stereotype.Service;
 import com.nukkadseva.nukkadsevabackend.dto.request.UserRequest;
 import com.nukkadseva.nukkadsevabackend.entity.Users;
 import com.nukkadseva.nukkadsevabackend.exception.UserAuthenticationException;
+import com.nukkadseva.nukkadsevabackend.exception.CustomerNotFoundException;
+import com.nukkadseva.nukkadsevabackend.exception.InvalidOtpException;
 import com.nukkadseva.nukkadsevabackend.security.JwtUtil;
 import com.nukkadseva.nukkadsevabackend.repository.CustomerRepository;
 import com.nukkadseva.nukkadsevabackend.repository.UserRepository;
@@ -40,6 +46,8 @@ public class UserServiceImpl implements UserService {
     private final ProviderRepository providerRepository;
     private final JwtUtil jwtUtil;
     private final AzureBlobStorageService azureBlobStorageService;
+    private final EmailService emailService;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public AuthResponse login(UserRequest userRequest) {
@@ -148,5 +156,58 @@ public class UserServiceImpl implements UserService {
             default:
                 throw new IllegalArgumentException("Unsupported role: " + role);
         }
+    }
+
+    @Override
+    @Transactional
+    public void generateResetOtp(ForgotPasswordRequest request) {
+        Optional<Users> userOpt = userRepository.findByEmail(request.getEmail());
+        if (userOpt.isEmpty()) {
+            throw new CustomerNotFoundException("No account found with this email address.");
+        }
+
+        Users user = userOpt.get();
+
+        if (!user.isVerified()) {
+            throw new CustomerNotFoundException(
+                    "This account has not been verified yet. Please verify your email first.");
+        }
+
+        // Generate 6-digit OTP
+        String otp = String.format("%06d", new java.util.Random().nextInt(999999));
+
+        user.setVerificationToken(otp);
+        user.setTokenExpiresAt(LocalDateTime.now().plusMinutes(15));
+        userRepository.save(user);
+
+        // Get user's name for email if available
+        String name = "User";
+        if (user.getCustomers() != null && user.getCustomers().getFullName() != null) {
+            name = user.getCustomers().getFullName();
+        } else if (user.getProvider() != null && user.getProvider().getFullName() != null) {
+            name = user.getProvider().getFullName();
+        }
+
+        emailService.sendForgotPasswordOtpEmail(user.getEmail(), name, otp);
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request) {
+        Users user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new CustomerNotFoundException("No account found with this email address."));
+
+        if (user.getVerificationToken() == null || !user.getVerificationToken().equals(request.getOtp())) {
+            throw new InvalidOtpException("The OTP you entered is incorrect. Please try again.");
+        }
+
+        if (user.getTokenExpiresAt() == null || user.getTokenExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new InvalidOtpException("This OTP has expired. Please request a new one.");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setVerificationToken(null);
+        user.setTokenExpiresAt(null);
+        userRepository.save(user);
     }
 }
