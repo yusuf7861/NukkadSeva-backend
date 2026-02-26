@@ -28,7 +28,9 @@ public class BookingRequest {
     private BigDecimal priceEstimate;
     @NotNull(message = "Final Price is required")
     private BigDecimal finalPrice;
-        @NotNull(message = "Payment Method is required")
+    @NotNull(message = "Payment Method is required")
     private PaymentMethod paymentMethod;
+    @NotNull(message = "Address ID is required")
+    private Long addressId;
     private String note;
 }

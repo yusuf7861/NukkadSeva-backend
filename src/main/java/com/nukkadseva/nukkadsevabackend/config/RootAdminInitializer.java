@@ -22,16 +22,16 @@ import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 
-@Slf4j
 @RequiredArgsConstructor
 @Component
 public class RootAdminInitializer implements CommandLineRunner {
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(RootAdminInitializer.class);
 
     private final UserRepository userRepository;
     private final JavaMailSender javaMailSender;
     private final Configuration freemarkerConfig;
     private final PasswordEncoder passwordEncoder;
-
 
     @Override
     public void run(String... args) throws Exception {
@@ -55,7 +55,8 @@ public class RootAdminInitializer implements CommandLineRunner {
         }
     }
 
-    private void sendRootAdminCredentialsEmail(String to, String email, String password) throws IOException, TemplateException, MessagingException {
+    private void sendRootAdminCredentialsEmail(String to, String email, String password)
+            throws IOException, TemplateException, MessagingException {
         Map<String, Object> model = new HashMap<>();
         model.put("email", email);
         model.put("password", password);
@@ -82,7 +83,7 @@ public class RootAdminInitializer implements CommandLineRunner {
         String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         SecureRandom random = new SecureRandom();
         StringBuilder sb = new StringBuilder(length);
-        for(int i = 0; i < length; i++) {
+        for (int i = 0; i < length; i++) {
             sb.append(chars.charAt(random.nextInt(chars.length())));
         }
         return sb.toString();

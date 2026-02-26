@@ -31,12 +31,13 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody UserRequest userRequest, HttpServletResponse response) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody UserRequest userRequest,
+            HttpServletResponse response) {
         AuthResponse login = userService.login(userRequest);
 
         ResponseCookie cookie = ResponseCookie.from("jwt", login.getAccessToken())
                 .httpOnly(true)
-                .secure(false) //TODO: make true at the time of deployment
+                .secure(false) // TODO: make true at the time of deployment
                 .path("/")
                 .maxAge(Duration.ofDays(1))
                 .sameSite("none")
@@ -79,7 +80,8 @@ public class UserController {
     }
 
     @PutMapping("/update-profile-picture")
-    public ResponseEntity<ApiResponse> updateProfileImage(@RequestParam("file") MultipartFile file, Authentication authentication) {
+    public ResponseEntity<ApiResponse> updateProfileImage(@RequestParam("file") MultipartFile file,
+            Authentication authentication) {
 
         if (authentication == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -91,5 +93,19 @@ public class UserController {
         userService.updateProfilePicture(file, authentication);
         return ResponseEntity.ok()
                 .body(new ApiResponse("PROFILE_UPDATED", "Profile Picture Updated Successfully"));
+    }
+
+    @PostMapping("/debug-login")
+    public ResponseEntity<String> debugLogin(@Valid @RequestBody UserRequest userRequest) {
+        try {
+            Authentication authentication = org.springframework.security.core.context.SecurityContextHolder.getContext()
+                    .getAuthentication();
+            userService.login(userRequest);
+            return ResponseEntity.ok("Login Successful");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Login failed: " + e.getMessage() + " | Class: " + e.getClass().getName());
+        }
     }
 }

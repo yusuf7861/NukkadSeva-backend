@@ -1,12 +1,15 @@
 package com.nukkadseva.nukkadsevabackend.service.implementation;
 
+import com.nukkadseva.nukkadsevabackend.dto.request.CustomerAddressDto;
 import com.nukkadseva.nukkadsevabackend.dto.request.CustomerProfileUpdateRequest;
 import com.nukkadseva.nukkadsevabackend.dto.request.UserRequest;
 import com.nukkadseva.nukkadsevabackend.entity.Address;
+import com.nukkadseva.nukkadsevabackend.entity.CustomerAddress;
 import com.nukkadseva.nukkadsevabackend.entity.Customers;
 import com.nukkadseva.nukkadsevabackend.entity.Users;
 import com.nukkadseva.nukkadsevabackend.entity.enums.Role;
 import com.nukkadseva.nukkadsevabackend.exception.EmailAlreadyExistsException;
+import com.nukkadseva.nukkadsevabackend.repository.CustomerAddressRepository;
 import com.nukkadseva.nukkadsevabackend.repository.CustomerRepository;
 import com.nukkadseva.nukkadsevabackend.repository.UserRepository;
 import com.nukkadseva.nukkadsevabackend.service.CustomerService;
@@ -31,12 +34,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RequiredArgsConstructor
 @Service
 public class CustomerServiceImpl implements CustomerService {
 
     private final UserRepository userRepository;
     private final CustomerRepository customerRepository;
+    private final CustomerAddressRepository customerAddressRepository;
     private final PasswordEncoder passwordEncoder;
     private final JavaMailSender mailSender;
     private final Configuration freemarkerConfig;
@@ -93,9 +100,9 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public Customers getCustomerProfile(String email) {
-        return customerRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("Customer not found with email: " + email));
+        return customerRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Customer not found with email: " + email));
     }
-
 
     @Override
     @Transactional
@@ -146,5 +153,119 @@ public class CustomerServiceImpl implements CustomerService {
         } catch (MessagingException | IOException | TemplateException e) {
             throw new RuntimeException("Failed to send verification email", e);
         }
+    }
+
+    // --- Address Management ---
+
+    private CustomerAddressDto mapToDto(CustomerAddress address) {
+        CustomerAddressDto dto = new CustomerAddressDto();
+        dto.setId(address.getId());
+        dto.setType(address.getType());
+        dto.setFlatName(address.getFlatName());
+        dto.setArea(address.getArea());
+        dto.setLandmark(address.getLandmark());
+        dto.setCity(address.getCity());
+        dto.setState(address.getState());
+        dto.setPincode(address.getPincode());
+        dto.setDefault(address.isDefault());
+        return dto;
+    }
+
+    @Override
+    @Transactional
+    public CustomerAddressDto addAddress(String email, CustomerAddressDto addressDto) {
+        Customers customer = getCustomerProfile(email);
+
+        CustomerAddress address = new CustomerAddress();
+        address.setCustomer(customer);
+        address.setType(addressDto.getType());
+        address.setFlatName(addressDto.getFlatName());
+        address.setArea(addressDto.getArea());
+        address.setLandmark(addressDto.getLandmark());
+        address.setCity(addressDto.getCity());
+        address.setState(addressDto.getState());
+        address.setPincode(addressDto.getPincode());
+
+        List<CustomerAddress> existingAddresses = customerAddressRepository.findByCustomer(customer);
+        if (existingAddresses.isEmpty() || addressDto.isDefault()) {
+            address.setDefault(true);
+            if (addressDto.isDefault()) {
+                existingAddresses.forEach(a -> {
+                    a.setDefault(false);
+                    customerAddressRepository.save(a);
+                });
+            }
+        } else {
+            address.setDefault(false);
+        }
+
+        return mapToDto(customerAddressRepository.save(address));
+    }
+
+    @Override
+    @Transactional
+    public CustomerAddressDto updateAddress(String email, Long addressId, CustomerAddressDto addressDto) {
+        Customers customer = getCustomerProfile(email);
+        CustomerAddress address = customerAddressRepository.findByIdAndCustomer(addressId, customer)
+                .orElseThrow(() -> new RuntimeException("Address not found"));
+
+        address.setType(addressDto.getType());
+        address.setFlatName(addressDto.getFlatName());
+        address.setArea(addressDto.getArea());
+        address.setLandmark(addressDto.getLandmark());
+        address.setCity(addressDto.getCity());
+        address.setState(addressDto.getState());
+        address.setPincode(addressDto.getPincode());
+
+        if (addressDto.isDefault() && !address.isDefault()) {
+            setDefaultAddress(email, address.getId());
+        }
+
+        return mapToDto(customerAddressRepository.save(address));
+    }
+
+    @Override
+    @Transactional
+    public void deleteAddress(String email, Long addressId) {
+        Customers customer = getCustomerProfile(email);
+        CustomerAddress address = customerAddressRepository.findByIdAndCustomer(addressId, customer)
+                .orElseThrow(() -> new RuntimeException("Address not found"));
+
+        boolean wasDefault = address.isDefault();
+        customerAddressRepository.delete(address);
+
+        if (wasDefault) {
+            List<CustomerAddress> remaining = customerAddressRepository.findByCustomer(customer);
+            if (!remaining.isEmpty()) {
+                CustomerAddress newDefault = remaining.get(0);
+                newDefault.setDefault(true);
+                customerAddressRepository.save(newDefault);
+            }
+        }
+    }
+
+    @Override
+    @Transactional
+    public void setDefaultAddress(String email, Long addressId) {
+        Customers customer = getCustomerProfile(email);
+
+        List<CustomerAddress> allAddresses = customerAddressRepository.findByCustomer(customer);
+        for (CustomerAddress addr : allAddresses) {
+            if (addr.getId().equals(addressId)) {
+                addr.setDefault(true);
+            } else {
+                addr.setDefault(false);
+            }
+            customerAddressRepository.save(addr);
+        }
+    }
+
+    @Override
+    public List<CustomerAddressDto> getSavedAddresses(String email) {
+        Customers customer = getCustomerProfile(email);
+        return customerAddressRepository.findByCustomer(customer)
+                .stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
     }
 }

@@ -4,11 +4,25 @@ import com.nukkadseva.nukkadsevabackend.dto.ApiError;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    // Re-throw Spring Security exceptions so they are handled by
+    // CustomAccessDeniedHandler / CustomAuthenticationEntryPoint
+    @ExceptionHandler(AccessDeniedException.class)
+    public void handleAccessDeniedException(AccessDeniedException e) throws AccessDeniedException {
+        throw e;
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public void handleAuthenticationException(AuthenticationException e) throws AuthenticationException {
+        throw e;
+    }
 
     @ExceptionHandler(EmailAlreadyExistsException.class)
     public ResponseEntity<ApiError> handleEmailAlreadyExistsException(EmailAlreadyExistsException e) {
@@ -52,12 +66,28 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BookingCreationException.class)
     public ResponseEntity<ApiError> handleBookingCreationException(BookingCreationException e) {
-        return buildErrorResponse("BOOKING_FAILED",  e.getMessage(), HttpStatus.BAD_REQUEST);
+        return buildErrorResponse("BOOKING_FAILED", e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(DataAccessException.class)
     public ResponseEntity<ApiError> handleDataAccessException(DataAccessException e) {
         return buildErrorResponse("DATABASE_ERROR", e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiError> handleValidationExceptions(
+            org.springframework.web.bind.MethodArgumentNotValidException ex) {
+        String errorMessage = ex.getBindingResult().getFieldErrors().stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .findFirst()
+                .orElse("Validation failed");
+        return buildErrorResponse("VALIDATION_ERROR", errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiError> handleHttpMessageNotReadableException(
+            org.springframework.http.converter.HttpMessageNotReadableException ex) {
+        return buildErrorResponse("MALFORMED_JSON_REQUEST", ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     // define all methods above 👆👆👆👆

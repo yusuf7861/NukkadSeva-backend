@@ -3,12 +3,16 @@ spring:
   application:
     name: nukkadseva-backend
 
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
 
   # Database Configuration
   datasource:
-    url: jdbc:postgresql://localhost:5432/nukkadseva
+    url: jdbc:postgresql://db.nuziesuojsthsqohsoah.supabase.co:5432/postgres
     username: postgres
-    password: yusuf@123
+    password: "7kYQ/D8meR2@w&D"
 
   jpa:
     show-sql: true
@@ -34,9 +38,9 @@ spring:
     drop-first: false
     clear-checksums: true
   mail:
-    host: ${MAIL_HOST}
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
+    host: ${MAIL_HOST:smtp.gmail.com}
+    username: ${MAIL_USERNAME:default}
+    password: ${MAIL_PASSWORD:default}
 
 # Storage Configuration
 storage:
@@ -45,6 +49,7 @@ storage:
 # Server Configuration
 server:
   port: 8080
+  address: 0.0.0.0
 
 # OpenAPI/Swagger Configuration
 springdoc:
@@ -66,6 +71,7 @@ jwt:
     expiration: 86400000
 
 app:
+  # Change this base-url to your server's IP (e.g., http://10.38.28.45:8080) for email verification links
   base-url: ${APP_BASE_URL:http://localhost:8080}
 
   #  datasource:

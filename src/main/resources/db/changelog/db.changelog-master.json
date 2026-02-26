@@ -29,6 +29,12 @@
         "file": "db/changelog/changes/v5-allow-null-customers-min-profile.json",
         "relativeToChangelogFile": false
       }
+    },
+    {
+      "include": {
+        "file": "db/changelog/changes/v6-create-city-pincode-tables.json",
+        "relativeToChangelogFile": false
+      }
     }
   ]
 }

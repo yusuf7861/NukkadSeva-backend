@@ -10,5 +10,11 @@ public class AuthUser {
     private final String email;
     private final String role;
     private final Long profileId;
-}
 
+    // authentication.getName() calls getPrincipal().toString()
+    // so this must return the email for provider/customer lookup to work
+    @Override
+    public String toString() {
+        return email;
+    }
+}

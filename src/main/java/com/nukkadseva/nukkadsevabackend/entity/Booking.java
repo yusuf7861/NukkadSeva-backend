@@ -19,16 +19,13 @@ import java.util.UUID;
 @Setter
 @DynamicUpdate
 @Entity
-@Table(
-        name = "booking",
-        indexes = {
-                @Index(name = "idx_booking_customer", columnList = "customer_id"),
-                @Index(name = "idx_booking_provider", columnList = "provider_id"),
-                @Index(name = "idx_booking_status", columnList = "status"),
-                @Index(name = "idx_booking_date", columnList = "booking_date_time"),
-                @Index(name = "idx_booking_review", columnList = "review_id")
-        }
-)
+@Table(name = "booking", indexes = {
+        @Index(name = "idx_booking_customer", columnList = "customer_id"),
+        @Index(name = "idx_booking_provider", columnList = "provider_id"),
+        @Index(name = "idx_booking_status", columnList = "status"),
+        @Index(name = "idx_booking_date", columnList = "booking_date_time"),
+        @Index(name = "idx_booking_review", columnList = "review_id")
+})
 public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -60,14 +57,17 @@ public class Booking {
 
     @UpdateTimestamp
     @Column(name = "updated_at")
-        private LocalDateTime updatedAt;
+    private LocalDateTime updatedAt;
     @Column(name = "cancelled_at")
     private LocalDateTime cancelledAt;
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
 
+    @Column(name = "completion_otp", length = 6)
+    private String completionOtp;
+
     @Column(name = "estimate_price")
-        private BigDecimal priceEstimate;
+    private BigDecimal priceEstimate;
     @Column(name = "final_price")
     private BigDecimal finalPrice;
 
@@ -80,9 +80,14 @@ public class Booking {
     private PaymentMethod paymentMethod;
 
     @Column(name = "note", columnDefinition = "TEXT")
-        private String note;
+    private String note;
     @Column(name = "provider_notes", columnDefinition = "TEXT")
     private String providerNote;
+    @Column(name = "rejection_reason", columnDefinition = "TEXT")
+    private String rejectionReason;
+
+    @Column(name = "service_address", columnDefinition = "TEXT")
+    private String serviceAddress;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "review_id", unique = true)
