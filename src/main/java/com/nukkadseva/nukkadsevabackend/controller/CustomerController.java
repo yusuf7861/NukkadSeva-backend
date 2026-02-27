@@ -1,7 +1,7 @@
 package com.nukkadseva.nukkadsevabackend.controller;
 
 import com.nukkadseva.nukkadsevabackend.dto.request.CustomerProfileUpdateRequest;
-import com.nukkadseva.nukkadsevabackend.dto.request.UserRequest;
+import com.nukkadseva.nukkadsevabackend.dto.request.CustomerRegistrationRequest;
 import com.nukkadseva.nukkadsevabackend.entity.Customers;
 import com.nukkadseva.nukkadsevabackend.service.CustomerService;
 import com.nukkadseva.nukkadsevabackend.security.AuthUser;
@@ -27,8 +27,9 @@ public class CustomerController {
     private final com.nukkadseva.nukkadsevabackend.service.DashboardService dashboardService;
 
     @PostMapping("/register")
-    public ResponseEntity<Map<String, Object>> customerRegistration(@Valid @RequestBody UserRequest userRequest) {
-        customerService.customerRegistration(userRequest);
+    public ResponseEntity<Map<String, Object>> customerRegistration(
+            @Valid @RequestBody CustomerRegistrationRequest request) {
+        customerService.customerRegistration(request);
 
         Map<String, Object> response = new HashMap<>();
         response.put("httpStatusCode", HttpStatus.CREATED.value());

@@ -82,7 +82,8 @@ public class ServiceController {
                         .durationMinutes(service.getDurationMinutes())
                         .providerName(service.getProvider().getFullName())
                         .providerId(service.getProvider().getId())
-                        .pincodes(service.getPincodes() == null ? List.of() : service.getPincodes().stream().toList())
+                        .pincodes(service.getProvider().getProviderAreas().stream()
+                                .flatMap(area -> area.getPincodes().stream()).collect(Collectors.toList()))
                         .providerVerified(Boolean.TRUE.equals(service.getProvider().getIsApproved()))
                         .build())
                 .collect(Collectors.toList());

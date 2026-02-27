@@ -2,13 +2,13 @@ package com.nukkadseva.nukkadsevabackend.service;
 
 import com.nukkadseva.nukkadsevabackend.dto.request.CustomerAddressDto;
 import com.nukkadseva.nukkadsevabackend.dto.request.CustomerProfileUpdateRequest;
-import com.nukkadseva.nukkadsevabackend.dto.request.UserRequest;
+import com.nukkadseva.nukkadsevabackend.dto.request.CustomerRegistrationRequest;
 import com.nukkadseva.nukkadsevabackend.entity.Customers;
 
 import java.util.List;
 
 public interface CustomerService {
-    void customerRegistration(UserRequest userRequest);
+    void customerRegistration(CustomerRegistrationRequest request);
 
     Customers updateCustomerProfile(CustomerProfileUpdateRequest request, String email);
 

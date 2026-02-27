@@ -317,9 +317,14 @@ public class ProviderServiceImpl implements ProviderService {
             if (city != null && !city.isEmpty()) {
                 predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("city"), city));
             }
+
             if (pincode != null && !pincode.isEmpty()) {
+                // Join Provider with ProviderArea to check pincodes
+                jakarta.persistence.criteria.Join<Provider, com.nukkadseva.nukkadsevabackend.entity.ProviderArea> areaJoin = root
+                        .join("providerAreas", jakarta.persistence.criteria.JoinType.INNER);
                 predicate = criteriaBuilder.and(predicate,
-                        criteriaBuilder.like(root.get("serviceArea"), "%" + pincode + "%"));
+                        criteriaBuilder.isMember(pincode, areaJoin.get("pincodes")));
+                query.distinct(true); // Since we are joining a collection, duplicates can appear if not distinct
             }
             return predicate;
         };

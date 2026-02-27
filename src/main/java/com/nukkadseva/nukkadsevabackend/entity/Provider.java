@@ -11,6 +11,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -103,7 +105,6 @@ public class Provider {
     @Column(name = "is_approved", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private Boolean isApproved = false;
 
-
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")
     private LocalDateTime createdAt;
@@ -124,4 +125,7 @@ public class Provider {
 
     @Column(name = "rejection_reason", length = 1000)
     private String rejectionReason;
+
+    @OneToMany(mappedBy = "provider", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProviderArea> providerAreas = new ArrayList<>();
 }
