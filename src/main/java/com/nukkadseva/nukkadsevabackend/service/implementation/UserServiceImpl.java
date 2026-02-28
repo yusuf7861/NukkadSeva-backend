@@ -132,6 +132,7 @@ public class UserServiceImpl implements UserService {
         String role = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .findFirst()
+                .map(r -> r.startsWith("ROLE_") ? r.substring(5) : r)
                 .orElseThrow(() -> new RuntimeException("No role assigned"));
 
         switch (role) {
