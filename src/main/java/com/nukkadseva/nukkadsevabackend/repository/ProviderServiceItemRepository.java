@@ -11,10 +11,11 @@ import java.util.List;
 public interface ProviderServiceItemRepository extends JpaRepository<ProviderServiceItem, Long> {
         List<ProviderServiceItem> findByProvider(Provider provider);
 
-        @org.springframework.data.jpa.repository.Query("SELECT s FROM ProviderServiceItem s JOIN s.provider p " +
+        @org.springframework.data.jpa.repository.Query("SELECT DISTINCT s FROM ProviderServiceItem s JOIN s.provider p LEFT JOIN p.providerAreas a "
+                        +
                         "WHERE p.status = 'APPROVED' AND s.isActive = true " +
-                        "AND (:city IS NULL OR p.city = :city) " +
-                        "AND (:pincode IS NULL OR p.serviceArea LIKE %:pincode% OR :pincode IN elements(s.pincodes)) " +
+                        "AND (:city IS NULL OR a.city = :city OR p.city = :city) " +
+                        "AND (:pincode IS NULL OR p.serviceArea LIKE %:pincode% OR :pincode IN elements(a.pincodes)) " +
                         "AND (:providerId IS NULL OR p.id = :providerId)")
         List<ProviderServiceItem> searchServices(
                         @org.springframework.data.repository.query.Param("city") String city,

@@ -2,6 +2,7 @@ package com.nukkadseva.nukkadsevabackend.service.implementation;
 
 import com.nukkadseva.nukkadsevabackend.dto.request.CustomerAddressDto;
 import com.nukkadseva.nukkadsevabackend.dto.request.CustomerProfileUpdateRequest;
+import com.nukkadseva.nukkadsevabackend.dto.request.CustomerRegistrationRequest;
 import com.nukkadseva.nukkadsevabackend.dto.request.UserRequest;
 import com.nukkadseva.nukkadsevabackend.entity.Address;
 import com.nukkadseva.nukkadsevabackend.entity.CustomerAddress;
@@ -113,15 +114,15 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     @Transactional
-    public void customerRegistration(UserRequest userRequest) {
+    public void customerRegistration(CustomerRegistrationRequest request) {
 
-        if (userRepository.existsByEmail(userRequest.getEmail())) {
-            throw new EmailAlreadyExistsException(userRequest.getEmail());
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new EmailAlreadyExistsException(request.getEmail());
         }
 
         Users users = new Users();
-        users.setEmail(userRequest.getEmail());
-        users.setPassword(passwordEncoder.encode(userRequest.getPassword()));
+        users.setEmail(request.getEmail());
+        users.setPassword(passwordEncoder.encode(request.getPassword()));
         users.setRole(Role.CUSTOMER);
         users.setVerified(false);
         users.setVerificationToken(UUID.randomUUID().toString());
@@ -129,7 +130,15 @@ public class CustomerServiceImpl implements CustomerService {
 
         // Create a Customers profile and set up associations
         Customers customer = new Customers();
-        customer.setEmail(userRequest.getEmail());
+        customer.setEmail(request.getEmail());
+
+        // Add optional fields from registration
+        if (request.getFullName() != null) {
+            customer.setFullName(request.getFullName());
+        }
+        if (request.getMobileNumber() != null) {
+            customer.setMobileNumber(request.getMobileNumber());
+        }
 
         // Link both sides of association; Users owns the FK (customer_id)
         users.setCustomers(customer);

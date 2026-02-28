@@ -36,7 +36,6 @@ public class ProviderServiceItemServiceImpl implements ProviderServiceItemServic
                 .price(serviceDto.getPrice())
                 .durationMinutes(serviceDto.getDurationMinutes())
                 .isActive(serviceDto.isActive())
-                .pincodes(serviceDto.getPincodes())
                 .build();
 
         return serviceItemRepository.save(newItem);
