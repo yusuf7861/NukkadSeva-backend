@@ -92,3 +92,4 @@ Check `/swagger-ui.html` during runtime to inspect and test all API routes direc
 
 ---
 **Built with ❤️ by the NukkadSeva Team**
+![alt text](image.png)
