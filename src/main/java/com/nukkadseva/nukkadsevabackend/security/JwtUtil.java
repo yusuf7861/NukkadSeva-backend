@@ -77,14 +77,20 @@ public class JwtUtil {
      * Extract user_id from JWT
      */
     public Long extractUserId(String token) {
-        return extractClaim(token, claims -> claims.get("user_id", Long.class));
+        return extractClaim(token, claims -> {
+            Number userId = claims.get("user_id", Number.class);
+            return userId != null ? userId.longValue() : null;
+        });
     }
 
     /**
      * Extract profile_id from JWT
      */
     public Long extractProfileId(String token) {
-        return extractClaim(token, claims -> claims.get("profile_id", Long.class));
+        return extractClaim(token, claims -> {
+            Number profileId = claims.get("profile_id", Number.class);
+            return profileId != null ? profileId.longValue() : null;
+        });
     }
 
     public Date extractExpiration(String token) {
