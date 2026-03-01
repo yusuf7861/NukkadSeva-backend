@@ -25,17 +25,20 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.nukkadseva.nukkadsevabackend.service.AuthService;
+
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class UserController {
     private final UserService userService;
+    private final AuthService authService;
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody UserRequest userRequest,
             HttpServletResponse response) {
-        AuthResponse login = userService.login(userRequest);
+        AuthResponse login = authService.login(userRequest);
 
         ResponseCookie cookie = ResponseCookie.from("jwt", login.getAccessToken())
                 .httpOnly(true)
@@ -83,13 +86,13 @@ public class UserController {
 
     @PostMapping("/forgot-password")
     public ResponseEntity<ApiResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
-        userService.generateResetOtp(request);
+        authService.generateResetOtp(request);
         return ResponseEntity.ok(new ApiResponse("OTP_SENT", "If the email is registered, an OTP has been sent."));
     }
 
     @PostMapping("/reset-password")
     public ResponseEntity<ApiResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
-        userService.resetPassword(request);
+        authService.resetPassword(request);
         return ResponseEntity
                 .ok(new ApiResponse("PASSWORD_RESET_SUCCESS", "Your password has been reset successfully."));
     }
@@ -115,7 +118,7 @@ public class UserController {
         try {
             SecurityContextHolder.getContext()
                     .getAuthentication();
-            userService.login(userRequest);
+            authService.login(userRequest);
             return ResponseEntity.ok("Login Successful");
         } catch (Exception e) {
             e.printStackTrace();

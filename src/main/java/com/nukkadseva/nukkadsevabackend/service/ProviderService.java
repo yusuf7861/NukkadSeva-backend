@@ -32,9 +32,9 @@ public interface ProviderService {
 
     Page<DashboardProviderDto> searchProviders(String category, String city, String pincode, int page, int limit);
 
-    void sendProviderApprovalEmail(String email, String password) throws IOException, TemplateException;
+    void sendProviderApprovalEmail(String email, String password);
 
-    void sendProviderRejectionEmail(String email, String reason) throws IOException, TemplateException;
+    void sendProviderRejectionEmail(String email, String reason);
 
     void sendVerificationEmail(String email, String token, Long providerId);
 
@@ -46,5 +46,5 @@ public interface ProviderService {
 
     Provider getProviderByEmail(String email);
 
-    Provider updateServiceArea(String email, java.util.List<String> pincodes);
+    Provider updateServiceArea(String email, List<String> pincodes);
 }

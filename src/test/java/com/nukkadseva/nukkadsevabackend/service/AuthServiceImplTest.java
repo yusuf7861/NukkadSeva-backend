@@ -8,7 +8,7 @@ import com.nukkadseva.nukkadsevabackend.entity.enums.Role;
 import com.nukkadseva.nukkadsevabackend.exception.UserAuthenticationException;
 import com.nukkadseva.nukkadsevabackend.repository.UserRepository;
 import com.nukkadseva.nukkadsevabackend.security.JwtUtil;
-import com.nukkadseva.nukkadsevabackend.service.implementation.UserServiceImpl;
+import com.nukkadseva.nukkadsevabackend.service.implementation.AuthServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,8 +26,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+import com.nukkadseva.nukkadsevabackend.service.EmailService;
+
 @ExtendWith(MockitoExtension.class)
-public class UserServiceImplTest {
+public class AuthServiceImplTest {
 
     @Mock
     private UserRepository userRepository;
@@ -36,10 +39,16 @@ public class UserServiceImplTest {
     private AuthenticationManager authenticationManager;
 
     @Mock
+    private EmailService emailService;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
     private JwtUtil jwtUtil;
 
     @InjectMocks
-    private UserServiceImpl userService;
+    private AuthServiceImpl authService;
 
     private UserRequest userRequest;
     private Users mockUser;
@@ -74,7 +83,7 @@ public class UserServiceImplTest {
         when(userRepository.findByEmail("test@test.com")).thenReturn(Optional.of(mockUser));
         when(jwtUtil.generateToken(1L, "test@test.com", "CUSTOMER", 1L)).thenReturn("mockJwtToken");
 
-        AuthResponse response = userService.login(userRequest);
+        AuthResponse response = authService.login(userRequest);
 
         assertNotNull(response);
         assertEquals("mockJwtToken", response.getAccessToken());
@@ -95,7 +104,7 @@ public class UserServiceImplTest {
         when(userRepository.findByEmail("test@test.com")).thenReturn(Optional.of(mockUser));
 
         UserAuthenticationException exception = assertThrows(UserAuthenticationException.class, () -> {
-            userService.login(userRequest);
+            authService.login(userRequest);
         });
 
         assertEquals("Please verify your email before logging in", exception.getMessage());
@@ -107,7 +116,7 @@ public class UserServiceImplTest {
                 .thenThrow(new BadCredentialsException("Bad credentials"));
 
         UserAuthenticationException exception = assertThrows(UserAuthenticationException.class, () -> {
-            userService.login(userRequest);
+            authService.login(userRequest);
         });
 
         assertEquals("Invalid email or password", exception.getMessage());
