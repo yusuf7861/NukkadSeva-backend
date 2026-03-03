@@ -8,6 +8,8 @@ import com.nukkadseva.nukkadsevabackend.dto.response.AuthResponse;
 public interface AuthService {
     AuthResponse login(UserRequest userRequest);
 
+    AuthResponse loginWithGoogle(String idToken);
+
     void generateResetOtp(ForgotPasswordRequest request);
 
     void resetPassword(ResetPasswordRequest request);

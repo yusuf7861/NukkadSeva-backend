@@ -1,0 +1,39 @@
+# =============================================
+# DEV Profile — Local Development
+# =============================================
+
+spring:
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+
+# Local file storage (no Azure needed)
+storage:
+  type: local
+
+# Swagger enabled in dev
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+
+# Verbose logging in dev
+logging:
+  level:
+    org.springdoc: DEBUG
+    com.nukkadseva: DEBUG
+#    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: DEBUG
+
+# Cookie: works over HTTP on localhost
+app:
+  cookie:
+    secure: false
+    same-site: lax

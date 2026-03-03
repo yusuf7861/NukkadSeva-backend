@@ -1,0 +1,34 @@
+# =============================================
+# PROD Profile — Production Deployment
+# =============================================
+
+spring:
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+# Azure Blob storage in production
+storage:
+  type: azure
+
+# Swagger disabled in production
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+# Minimal logging in production
+logging:
+  level:
+    root: WARN
+    com.nukkadseva: INFO
+    org.springframework: WARN
+
+# Cookie: HTTPS only, cross-site support
+app:
+  cookie:
+    secure: true
+    same-site: none
