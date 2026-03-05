@@ -1,0 +1,65 @@
+# Backend Architecture and Code Standards Audit
+
+This document outlines the architectural patterns and code standards currently employed in the `NukkadSeva-backend` Spring Boot application, specifically focusing on its adherence to clean code practices and SOLID principles.
+
+## 1. Architectural Pattern
+
+The application follows a standard **Layered Architecture** (also known as N-Tier Architecture), which separates concerns into distinct layers:
+
+### Layers Identified:
+1.  **Presentation/Controller Layer (`controller` package):**
+    *   **Responsibility:** Handles incoming HTTP requests, performs input validation (using Jakarta `@Valid`), and maps responses.
+    *   **Observation:** Controllers (e.g., `CustomerController`) are generally thin and delegate business logic to the service layer. They correctly return HTTP status codes and map DTOs.
+2.  **Service Layer (`service` and `service/implementation` packages):**
+    *   **Responsibility:** Orchestrates business rules, transactions, and data manipulation.
+    *   **Observation:** The application makes good use of interfaces (e.g., `CustomerService`) and their implementations (e.g., `CustomerServiceImpl`). This provides a clear contract and allows for loose coupling.
+3.  **Data Access Layer (`repository` package):**
+    *   **Responsibility:** Interacts with the database.
+    *   **Observation:** Uses Spring Data JPA interfaces (`JpaRepository`), which abstracts away complex SQL queries and provides built-in CRUD operations.
+4.  **Domain/Entity Layer (`entity` package):**
+    *   **Responsibility:** Represents database tables and object-relational mapping (ORM).
+    *   **Observation:** Uses JPA annotations (`@Entity`, `@Table`) and Lombok to reduce boilerplate.
+
+## 2. Adherence to SOLID Principles
+
+The codebase demonstrates varied adherence to the SOLID principles:
+
+### Single Responsibility Principle (SRP)
+*   **Controllers:** Mostly adhere to SRP. `CustomerController` primarily handles HTTP routing for customer actions.
+*   **Services:** Show signs of violation. Some service implementations (like `CustomerServiceImpl`, `ProviderServiceImpl`, and `BookingServiceImpl`) act as **"God Classes"** handling everything from profile updates to dashboard statistics and email sending.
+    *   *Improvement:* Extract distinct responsibilities (e.g., move email notification logic to a dedicated `NotificationService`, separate dashboard statistics retrieval from core customer mutations).
+*   **Entities:** Adhere well; they strictly represent their corresponding data schema.
+
+### Open/Closed Principle (OCP)
+*   The use of service interfaces allows the system to be partially open for extension (by providing new implementations) but closed for modification.
+*   However, heavy use of `switch` statements or massive `if-else` blocks in services (e.g., handling different Booking Statuses) might violate OCP.
+
+### Liskov Substitution Principle (LSP)
+*   The codebase largely uses interface implementations (e.g., `CustomerService` interface implemented by `CustomerServiceImpl`). As long as the implementation honors the contract defined by the interface, it complies with LSP.
+
+### Interface Segregation Principle (ISP)
+*   The service interfaces are currently quite broad. For example, `CustomerService` handles registration, profile updates, and address management. 
+    *   *Improvement:* If clients only need address management, they are forced to depend on the entire `CustomerService`. Splitting fat interfaces into smaller, role-specific interfaces (e.g., `CustomerProfileService`, `CustomerAddressService`) would improve ISP compliance.
+
+### Dependency Inversion Principle (DIP)
+*   **Excellent Compliance:** The application heavily relies on Spring's Dependency Injection. High-level modules (Controllers) depend on abstractions (Service Interfaces), not concrete implementations.
+*   The use of `@RequiredArgsConstructor` alongside `private final` fields enforces constructor injection, which is a best practice.
+
+## 3. Clean Code Practices and Domain Modeling
+
+### Anemic Domain Model vs. Rich Domain Model
+*   The application currently utilizes an **Anemic Domain Model**. Entities (like `Booking.java`) are essentially just data containers with getters and setters (provided by Lombok `@Getter` and `@Setter`).
+*   **Observation:** The actual business logic (e.g., calculating final prices, validating state transitions for bookings) is procedural and lives entirely inside the Service layer. While common in Spring Boot applications, this is an anti-pattern in pure Object-Oriented Design.
+    *   *Improvement Consideration:* Moving state-validating logic into the entities themselves (Rich Domain Model) could improve encapsulation.
+
+### Code Cleanliness
+*   **Lombok Usage:** Extensive use of Lombok (`@Getter`, `@Setter`, `@RequiredArgsConstructor`) keeps the code concise and free of boilerplate.
+*   **DTOs (Data Transfer Objects):** The application correctly uses DTOs for requests and responses, preventing exposing internal database entities directly to the frontend.
+*   **Validation:** Proper use of Jakarta Validation (`@Valid`, `@NotNull`, etc.) on DTOs ensures data integrity at the edge of the application.
+*   **Exception Handling:** Centralized exception handling (assuming a `@ControllerAdvice` exists in the `exception` package) prevents raw stack traces from reaching the client.
+
+## Summary
+
+The `NukkadSeva-backend` possesses a solid, industry-standard foundation using Spring Boot layered architecture. Its primary strength lies in its excellent use of Dependency Injection. 
+
+To elevate the code to a more professional standard, the primary focus should be on breaking down large service classes (improving SRP) and potentially moving some business rules closer to the data (moving away from an entirely anemic domain model).

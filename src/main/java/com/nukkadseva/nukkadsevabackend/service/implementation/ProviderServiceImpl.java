@@ -15,6 +15,7 @@ import com.nukkadseva.nukkadsevabackend.repository.UserRepository;
 import com.nukkadseva.nukkadsevabackend.repository.CityRepository;
 import com.nukkadseva.nukkadsevabackend.service.AzureBlobStorageService;
 import com.nukkadseva.nukkadsevabackend.service.ProviderService;
+import com.nukkadseva.nukkadsevabackend.service.EmailService;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -58,10 +59,9 @@ public class ProviderServiceImpl implements ProviderService {
     private final UserRepository userRepository;
     private final CityRepository cityRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JavaMailSender mailSender;
     private final AzureBlobStorageService azureBlobStorageService;
-    private final Configuration freemarkerConfiguration;
     private final ProviderMapper providerMapper;
+    private final EmailService emailService;
 
     @Value("${app.base-url:http://localhost:8080}")
     private String baseUrl;
@@ -209,42 +209,38 @@ public class ProviderServiceImpl implements ProviderService {
             throw new RuntimeException("Provider email must be verified before approval");
         }
 
-        try {
-            provider.setStatus(ProviderStatus.APPROVED);
-            provider.setIsApproved(true);
+        provider.setStatus(ProviderStatus.APPROVED);
+        provider.setIsApproved(true);
 
-            Optional<Users> existingUser = userRepository.findByEmail(provider.getEmail());
-            Users user;
-            if (existingUser.isPresent()) {
-                user = existingUser.get();
-                user.setRole(Role.SERVICE_PROVIDER);
-                user.setProvider(provider);
-                provider.setUser(user);
-                userRepository.save(user);
-                Provider savedProvider = providerRepository.save(provider);
-                sendProviderApprovalEmail(provider.getEmail(), "(Your existing account password)");
-                return savedProvider;
-            } else {
-                String generatedPassword = generateSecurePassword();
-                user = new Users();
-                user.setEmail(provider.getEmail());
-                user.setPassword(passwordEncoder.encode(generatedPassword));
-                user.setRole(Role.SERVICE_PROVIDER);
-                user.setVerified(true);
-                user.setProvider(provider);
-                provider.setUser(user);
-                userRepository.save(user);
-                Provider savedProvider = providerRepository.save(provider);
-                sendProviderApprovalEmail(provider.getEmail(), generatedPassword);
-                return savedProvider;
-            }
-        } catch (IOException | TemplateException e) {
-            throw new RuntimeException(e);
+        Optional<Users> existingUser = userRepository.findByEmail(provider.getEmail());
+        Users user;
+        if (existingUser.isPresent()) {
+            user = existingUser.get();
+            user.setRole(Role.SERVICE_PROVIDER);
+            user.setProvider(provider);
+            provider.setUser(user);
+            userRepository.save(user);
+            Provider savedProvider = providerRepository.save(provider);
+            sendProviderApprovalEmail(provider.getEmail(), "(Your existing account password)");
+            return savedProvider;
+        } else {
+            String generatedPassword = generateSecurePassword();
+            user = new Users();
+            user.setEmail(provider.getEmail());
+            user.setPassword(passwordEncoder.encode(generatedPassword));
+            user.setRole(Role.SERVICE_PROVIDER);
+            user.setVerified(true);
+            user.setProvider(provider);
+            provider.setUser(user);
+            userRepository.save(user);
+            Provider savedProvider = providerRepository.save(provider);
+            sendProviderApprovalEmail(provider.getEmail(), generatedPassword);
+            return savedProvider;
         }
     }
 
     @Override
-    public Provider rejectProvider(Long providerId, String reason) throws TemplateException, IOException {
+    public Provider rejectProvider(Long providerId, String reason) {
         Provider provider = providerRepository.findById(providerId)
                 .orElseThrow(() -> new RuntimeException("Provider not found with id: " + providerId));
 
@@ -338,63 +334,17 @@ public class ProviderServiceImpl implements ProviderService {
      * Sends an email to the provider with their login credentials
      */
     @Override
-    public void sendProviderApprovalEmail(String email, String password) throws IOException, TemplateException {
-        try {
-
-            Map<String, Object> model = new HashMap<>();
-            model.put("email", email);
-            model.put("password", password);
-            Template template;
-
-            template = freemarkerConfiguration.getTemplate("provider-approval.html");
-
-            StringWriter stringWriter = new StringWriter();
-            template.process(model, stringWriter);
-            String htmlContent = stringWriter.toString();
-
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
-
-            helper.setTo(email);
-            helper.setSubject("NukkadSeva Provider Account Approved");
-            helper.setText(htmlContent, true);
-            mailSender.send(message);
-
-        } catch (MessagingException e) {
-            System.err.println("Failed to send approval email: " + e.getMessage());
-        }
+    public void sendProviderApprovalEmail(String email, String password) {
+        emailService.sendProviderApprovalEmail(email, password);
     }
 
     /**
      * Sends a rejection notification email to the provider
      */
     @Override
-    public void sendProviderRejectionEmail(String email, String reason) throws IOException, TemplateException {
-        try {
-
-            Map<String, Object> model = new HashMap<>();
-            model.put("email", email);
-            model.put("reason", reason);
-            Template template;
-
-            template = freemarkerConfiguration.getTemplate("provider-rejection.html");
-
-            StringWriter stringWriter = new StringWriter();
-            template.process(model, stringWriter);
-            String htmlContent = stringWriter.toString();
-
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
-
-            helper.setTo(email);
-            helper.setSubject("NukkadSeva Provider Application Status");
-
-            helper.setText(htmlContent, true);
-            mailSender.send(message);
-
-        } catch (MessagingException e) {
-            log.error("Failed to send rejection email: {}", e.getMessage());
-        }
+    public void sendProviderRejectionEmail(String email, String reason) {
+        // Need to fetch name or just pass empty string. We'll pass empty for now.
+        emailService.sendProviderRejectionEmail(email, "Provider", reason);
     }
 
     /**
@@ -402,38 +352,7 @@ public class ProviderServiceImpl implements ProviderService {
      */
     @Override
     public void sendVerificationEmail(String email, String token, Long providerId) {
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
-
-            helper.setTo(email);
-            helper.setSubject("NukkadSeva Provider Email Verification");
-
-            String emailContent = getString(token, providerId, baseUrl);
-
-            helper.setText(emailContent, true);
-            mailSender.send(message);
-
-        } catch (MessagingException e) {
-            log.error("Failed to send verification email: {}", e.getMessage());
-        }
-    }
-
-    @NotNull
-    private static String getString(String token, Long providerId, String baseUrl) {
-        String verificationLink = baseUrl + "/api/provider/verify-email?token=" + token + "&id=" + providerId;
-
-        String emailContent = "<h2>NukkadSeva Email Verification</h2>" +
-                "<p>Thank you for registering as a service provider on NukkadSeva.</p>" +
-                "<p>Please verify your email by clicking the link below:</p>" +
-                "<p><a href=\"" + verificationLink
-                + "\" style=\"background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;\">Verify Email</a></p>"
-                +
-                "<p>Or copy and paste this link in your browser:</p>" +
-                "<p>" + verificationLink + "</p>" +
-                "<p>This link will expire in 24 hours.</p>" +
-                "<p>If you did not register, please ignore this email.</p>";
-        return emailContent;
+        emailService.sendProviderVerificationEmail(email, token, providerId, baseUrl);
     }
 
     /**

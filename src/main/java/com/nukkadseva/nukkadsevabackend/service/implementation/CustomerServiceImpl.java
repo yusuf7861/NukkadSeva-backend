@@ -13,6 +13,7 @@ import com.nukkadseva.nukkadsevabackend.entity.enums.Role;
 import com.nukkadseva.nukkadsevabackend.exception.EmailAlreadyExistsException;
 import com.nukkadseva.nukkadsevabackend.repository.*;
 import com.nukkadseva.nukkadsevabackend.service.CustomerService;
+import com.nukkadseva.nukkadsevabackend.service.EmailService;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -47,8 +48,7 @@ public class CustomerServiceImpl implements CustomerService {
     private final BookingRepository bookingRepository;
     private final ReviewRepository reviewRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JavaMailSender mailSender;
-    private final Configuration freemarkerConfig;
+    private final EmailService emailService;
 
     @Value("${app.base-url:http://localhost:8080}")
     private String baseUrl;
@@ -151,24 +151,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     private void sendVerificationEmail(String email, String token) {
-        try {
-            Map<String, Object> model = new HashMap<>();
-            model.put("email", email);
-            model.put("verificationLink", baseUrl + "/api/verify-email?token=" + token);
-
-            Template template = freemarkerConfig.getTemplate("user-email-verification.html");
-            StringWriter stringWriter = new StringWriter();
-            template.process(model, stringWriter);
-
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
-            helper.setTo(email);
-            helper.setSubject("Verify your NukkadSeva account");
-            helper.setText(stringWriter.toString(), true);
-            mailSender.send(message);
-        } catch (MessagingException | IOException | TemplateException e) {
-            throw new RuntimeException("Failed to send verification email", e);
-        }
+        emailService.sendCustomerVerificationEmail(email, token, baseUrl);
     }
 
     // --- Address Management ---

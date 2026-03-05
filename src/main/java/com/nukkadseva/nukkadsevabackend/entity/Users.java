@@ -1,5 +1,6 @@
 package com.nukkadseva.nukkadsevabackend.entity;
 
+import com.nukkadseva.nukkadsevabackend.entity.enums.AuthProvider;
 import com.nukkadseva.nukkadsevabackend.entity.enums.Role;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -23,8 +24,12 @@ public class Users {
     @Column(name = "user_email", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "password", nullable = false)
+    @Column(name = "password")
     private String password;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "auth_provider", nullable = false)
+    private AuthProvider authProvider = AuthProvider.LOCAL;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
