@@ -60,3 +60,7 @@ logging:
     org.springframework: INFO
     com.nukkadseva: DEBUG
 
+google:
+  client:
+    id: test-google-client-id
+    secret: test-google-client-secret
