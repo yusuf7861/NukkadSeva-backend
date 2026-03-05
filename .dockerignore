@@ -1,0 +1,53 @@
+# IDE files
+.idea/
+.vscode/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker files
+docker-compose.yml
+Dockerfile
+.dockerignore
+
+# Node (if frontend exists)
+node_modules/
+
+# Test reports
+test-results/
+reports/
+
+# Temporary files
+tmp/
+temp/
+
+# Documentation & non-essential files
+*.md
+*.png
+*.txt
+bootrun.log
+Architecture Audit
+Performance Audit
+
+# Local environment files (pass via --env-file or docker env)
+.env
+.env.*
+
+# Build output (we rebuild inside Docker)
+build/
+bin/
+out/
+target/
+
+# Gradle cache
+.gradle/
+
+# Uploads
+uploads/
