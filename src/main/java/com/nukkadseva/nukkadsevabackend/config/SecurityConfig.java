@@ -92,9 +92,11 @@ public class SecurityConfig {
         @Bean
         public CorsConfigurationSource corsConfigurationSource() {
                 CorsConfiguration config = new CorsConfiguration();
-                config.setAllowedOriginPatterns(List.of("*"));
+                config.setAllowedOrigins(List.of(
+                                "https://nukkadseva.yusufjamal.in"));
                 config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-                config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cookie"));
+                config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cookie", "Accept", "Origin",
+                                "Access-Control-Request-Method", "Access-Control-Request-Headers"));
                 config.setAllowCredentials(true);
 
                 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
