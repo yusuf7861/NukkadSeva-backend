@@ -4,7 +4,7 @@
 
 spring:
   jpa:
-    show-sql: false
+    show-sql: true
     hibernate:
       ddl-auto: update
     open-in-view: false
@@ -23,9 +23,9 @@ springdoc:
 # Minimal logging in production
 logging:
   level:
-    root: WARN
-    com.nukkadseva: INFO
-    org.springframework: WARN
+    root: DEBUG
+    com.nukkadseva: DEBUG
+    org.springframework: DEBUG
 
 # Cookie: HTTPS only, cross-site support
 app:
