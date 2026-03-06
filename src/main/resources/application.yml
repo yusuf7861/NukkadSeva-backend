@@ -53,7 +53,7 @@ google:
 
 # App Configuration
 app:
-  base-url: ${APP_BASE_URL:http://localhost:8080}
+  base-url: ${APP_BASE_URL:https://nukkadseva-container-cca4cfc4hvhmf0ek.eastasia-01.azurewebsites.net}
 
 # Default profile: dev
 spring.profiles.active: ${SPRING_PROFILES_ACTIVE:prod}

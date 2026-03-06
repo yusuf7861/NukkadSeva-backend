@@ -2,7 +2,6 @@ package com.nukkadseva.nukkadsevabackend.controller;
 
 import com.nukkadseva.nukkadsevabackend.dto.request.CustomerProfileUpdateRequest;
 import com.nukkadseva.nukkadsevabackend.dto.request.CustomerRegistrationRequest;
-import com.nukkadseva.nukkadsevabackend.entity.Customers;
 import com.nukkadseva.nukkadsevabackend.service.CustomerService;
 import com.nukkadseva.nukkadsevabackend.security.AuthUser;
 import com.nukkadseva.nukkadsevabackend.security.CurrentUser;
@@ -38,7 +37,8 @@ public class CustomerController {
     }
 
     @GetMapping("/profile")
-    public ResponseEntity<Customers> getCustomerProfile(@CurrentUser AuthUser user) {
+    public ResponseEntity<com.nukkadseva.nukkadsevabackend.dto.response.CustomerProfileResponseDto> getCustomerProfile(
+            @CurrentUser AuthUser user) {
         return ResponseEntity.ok(customerService.getCustomerProfile(user.getEmail()));
     }
 

@@ -4,18 +4,13 @@ import com.nukkadseva.nukkadsevabackend.dto.request.ProviderDto;
 import com.nukkadseva.nukkadsevabackend.entity.Provider;
 import com.nukkadseva.nukkadsevabackend.service.DashboardService;
 import com.nukkadseva.nukkadsevabackend.service.ProviderService;
-import freemarker.template.TemplateException;
-import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -47,7 +42,6 @@ public class ProviderController {
         }
     }
 
-
     @GetMapping("/verify-email")
     public ResponseEntity<String> verifyProviderEmail(@RequestParam String token) {
         boolean verified = providerService.verifyProviderEmail(token);
@@ -65,7 +59,8 @@ public class ProviderController {
             Authentication authentication = org.springframework.security.core.context.SecurityContextHolder
                     .getContext().getAuthentication();
             String email = authentication.getName();
-            Provider provider = providerService.getProviderByEmail(email);
+            com.nukkadseva.nukkadsevabackend.dto.response.ProviderProfileResponseDto provider = providerService
+                    .getProviderByEmail(email);
             return new ResponseEntity<>(provider, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(Map.of("message", "Failed to fetch profile: " + e.getMessage()),
