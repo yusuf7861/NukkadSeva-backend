@@ -1,6 +1,7 @@
 package com.nukkadseva.nukkadsevabackend.service.implementation;
 
 import com.nukkadseva.nukkadsevabackend.dto.request.ServiceDto;
+import com.nukkadseva.nukkadsevabackend.dto.response.ProviderServiceItemResponseDto;
 import com.nukkadseva.nukkadsevabackend.entity.Provider;
 import com.nukkadseva.nukkadsevabackend.entity.ProviderServiceItem;
 import com.nukkadseva.nukkadsevabackend.exception.ProviderNotFoundException;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +25,7 @@ public class ProviderServiceItemServiceImpl implements ProviderServiceItemServic
 
     @Override
     @Transactional
-    public ProviderServiceItem createService(ServiceDto serviceDto, Authentication authentication) {
+    public ProviderServiceItemResponseDto createService(ServiceDto serviceDto, Authentication authentication) {
         String email = authentication.getName();
         Provider provider = providerRepository.findByEmail(email)
                 .orElseThrow(() -> new ProviderNotFoundException("Provider not found for email: " + email));
@@ -38,16 +40,18 @@ public class ProviderServiceItemServiceImpl implements ProviderServiceItemServic
                 .isActive(serviceDto.isActive())
                 .build();
 
-        return serviceItemRepository.save(newItem);
+        ProviderServiceItem savedItem = serviceItemRepository.save(newItem);
+        return mapToDto(savedItem);
     }
 
     @Override
-    public List<ProviderServiceItem> getMyServices(Authentication authentication) {
+    public List<ProviderServiceItemResponseDto> getMyServices(Authentication authentication) {
         String email = authentication.getName();
         Provider provider = providerRepository.findByEmail(email)
                 .orElseThrow(() -> new ProviderNotFoundException("Provider not found for email: " + email));
 
-        return serviceItemRepository.findByProvider(provider);
+        List<ProviderServiceItem> items = serviceItemRepository.findByProvider(provider);
+        return items.stream().map(this::mapToDto).collect(Collectors.toList());
     }
 
     @Override
@@ -57,7 +61,7 @@ public class ProviderServiceItemServiceImpl implements ProviderServiceItemServic
 
     @Override
     @Transactional
-    public ProviderServiceItem toggleServiceStatus(Long serviceId, Authentication authentication) {
+    public ProviderServiceItemResponseDto toggleServiceStatus(Long serviceId, Authentication authentication) {
         String email = authentication.getName();
         Provider provider = providerRepository.findByEmail(email)
                 .orElseThrow(() -> new ProviderNotFoundException("Provider not found for email: " + email));
@@ -71,6 +75,19 @@ public class ProviderServiceItemServiceImpl implements ProviderServiceItemServic
         }
 
         service.setActive(!service.isActive());
-        return serviceItemRepository.save(service);
+        ProviderServiceItem savedItem = serviceItemRepository.save(service);
+        return mapToDto(savedItem);
+    }
+
+    private ProviderServiceItemResponseDto mapToDto(ProviderServiceItem item) {
+        return ProviderServiceItemResponseDto.builder()
+                .id(item.getId())
+                .name(item.getName())
+                .description(item.getDescription())
+                .category(item.getCategory())
+                .price(item.getPrice())
+                .durationMinutes(item.getDurationMinutes())
+                .isActive(item.isActive())
+                .build();
     }
 }

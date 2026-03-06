@@ -28,20 +28,20 @@ public class AdminController {
     private final CityService cityService;
 
     @GetMapping("/providers/pending")
-    public ResponseEntity<List<Provider>> getPendingProviders() {
-        List<Provider> pendingProviders = providerService.getPendingProviders();
+    public ResponseEntity<List<ProviderSummaryDto>> getPendingProviders() {
+        List<ProviderSummaryDto> pendingProviders = providerService.getPendingProviders();
         return new ResponseEntity<>(pendingProviders, HttpStatus.OK);
     }
 
     @GetMapping("/providers/approved")
-    public ResponseEntity<List<Provider>> getApprovedProviders() {
-        List<Provider> approvedProviders = providerService.getProvidersByStatus(ProviderStatus.APPROVED);
+    public ResponseEntity<List<ProviderSummaryDto>> getApprovedProviders() {
+        List<ProviderSummaryDto> approvedProviders = providerService.getProvidersByStatus(ProviderStatus.APPROVED);
         return new ResponseEntity<>(approvedProviders, HttpStatus.OK);
     }
 
     @GetMapping("/providers/rejected")
-    public ResponseEntity<List<Provider>> getRejectedProviders() {
-        List<Provider> rejectedProviders = providerService.getProvidersByStatus(ProviderStatus.REJECTED);
+    public ResponseEntity<List<ProviderSummaryDto>> getRejectedProviders() {
+        List<ProviderSummaryDto> rejectedProviders = providerService.getProvidersByStatus(ProviderStatus.REJECTED);
         return new ResponseEntity<>(rejectedProviders, HttpStatus.OK);
     }
 
@@ -50,21 +50,17 @@ public class AdminController {
         try {
             Provider approvedProvider = providerService.approveProvider(id);
             return new ResponseEntity<>(
-                Map.of(
-                    "success", true,
-                    "message", "Provider approved successfully",
-                    "providerId", approvedProvider.getId()
-                ),
-                HttpStatus.OK
-            );
+                    Map.of(
+                            "success", true,
+                            "message", "Provider approved successfully",
+                            "providerId", approvedProvider.getId()),
+                    HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(
-                Map.of(
-                    "success", false,
-                    "message", "Failed to approve provider: " + e.getMessage()
-                ),
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+                    Map.of(
+                            "success", false,
+                            "message", "Failed to approve provider: " + e.getMessage()),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -74,31 +70,25 @@ public class AdminController {
             String reason = requestBody.get("reason");
             if (reason == null || reason.trim().isEmpty()) {
                 return new ResponseEntity<>(
-                    Map.of(
-                        "success", false,
-                        "message", "Rejection reason is required"
-                    ),
-                    HttpStatus.BAD_REQUEST
-                );
+                        Map.of(
+                                "success", false,
+                                "message", "Rejection reason is required"),
+                        HttpStatus.BAD_REQUEST);
             }
 
             Provider rejectedProvider = providerService.rejectProvider(id, reason);
             return new ResponseEntity<>(
-                Map.of(
-                    "success", true,
-                    "message", "Provider rejected",
-                    "providerId", rejectedProvider.getId()
-                ),
-                HttpStatus.OK
-            );
+                    Map.of(
+                            "success", true,
+                            "message", "Provider rejected",
+                            "providerId", rejectedProvider.getId()),
+                    HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(
-                Map.of(
-                    "success", false,
-                    "message", "Failed to reject provider: " + e.getMessage()
-                ),
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+                    Map.of(
+                            "success", false,
+                            "message", "Failed to reject provider: " + e.getMessage()),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -121,29 +111,23 @@ public class AdminController {
         try {
             CityWithPincodesResponse response = cityService.addCityWithPincodes(request);
             return new ResponseEntity<>(
-                Map.of(
-                    "success", true,
-                    "message", "City and pincodes added successfully",
-                    "data", response
-                ),
-                HttpStatus.CREATED
-            );
+                    Map.of(
+                            "success", true,
+                            "message", "City and pincodes added successfully",
+                            "data", response),
+                    HttpStatus.CREATED);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(
-                Map.of(
-                    "success", false,
-                    "message", e.getMessage()
-                ),
-                HttpStatus.BAD_REQUEST
-            );
+                    Map.of(
+                            "success", false,
+                            "message", e.getMessage()),
+                    HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             return new ResponseEntity<>(
-                Map.of(
-                    "success", false,
-                    "message", "Failed to add city: " + e.getMessage()
-                ),
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+                    Map.of(
+                            "success", false,
+                            "message", "Failed to add city: " + e.getMessage()),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -154,21 +138,17 @@ public class AdminController {
         try {
             CityWithPincodesResponse response = cityService.addPincodesToCity(cityId, pincodes);
             return new ResponseEntity<>(
-                Map.of(
-                    "success", true,
-                    "message", "Pincodes added successfully",
-                    "data", response
-                ),
-                HttpStatus.OK
-            );
+                    Map.of(
+                            "success", true,
+                            "message", "Pincodes added successfully",
+                            "data", response),
+                    HttpStatus.OK);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(
-                Map.of(
-                    "success", false,
-                    "message", e.getMessage()
-                ),
-                HttpStatus.BAD_REQUEST
-            );
+                    Map.of(
+                            "success", false,
+                            "message", e.getMessage()),
+                    HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -180,31 +160,25 @@ public class AdminController {
             Boolean isActive = requestBody.get("isActive");
             if (isActive == null) {
                 return new ResponseEntity<>(
-                    Map.of(
-                        "success", false,
-                        "message", "isActive field is required"
-                    ),
-                    HttpStatus.BAD_REQUEST
-                );
+                        Map.of(
+                                "success", false,
+                                "message", "isActive field is required"),
+                        HttpStatus.BAD_REQUEST);
             }
 
             CityWithPincodesResponse response = cityService.toggleCityStatus(cityId, isActive);
             return new ResponseEntity<>(
-                Map.of(
-                    "success", true,
-                    "message", "City status updated successfully",
-                    "data", response
-                ),
-                HttpStatus.OK
-            );
+                    Map.of(
+                            "success", true,
+                            "message", "City status updated successfully",
+                            "data", response),
+                    HttpStatus.OK);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(
-                Map.of(
-                    "success", false,
-                    "message", e.getMessage()
-                ),
-                HttpStatus.NOT_FOUND
-            );
+                    Map.of(
+                            "success", false,
+                            "message", e.getMessage()),
+                    HttpStatus.NOT_FOUND);
         }
     }
 
@@ -213,20 +187,16 @@ public class AdminController {
         try {
             cityService.deleteCity(cityId);
             return new ResponseEntity<>(
-                Map.of(
-                    "success", true,
-                    "message", "City deleted successfully"
-                ),
-                HttpStatus.OK
-            );
+                    Map.of(
+                            "success", true,
+                            "message", "City deleted successfully"),
+                    HttpStatus.OK);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(
-                Map.of(
-                    "success", false,
-                    "message", e.getMessage()
-                ),
-                HttpStatus.NOT_FOUND
-            );
+                    Map.of(
+                            "success", false,
+                            "message", e.getMessage()),
+                    HttpStatus.NOT_FOUND);
         }
     }
 }

@@ -26,26 +26,30 @@ public class ServiceController {
 
     @PreAuthorize("hasRole('SERVICE_PROVIDER')")
     @PostMapping
-    public ResponseEntity<ProviderServiceItem> createService(
+    public ResponseEntity<com.nukkadseva.nukkadsevabackend.dto.response.ProviderServiceItemResponseDto> createService(
             @Valid @RequestBody ServiceDto serviceDto,
             Authentication authentication) {
-        ProviderServiceItem createdService = serviceItemService.createService(serviceDto, authentication);
+        com.nukkadseva.nukkadsevabackend.dto.response.ProviderServiceItemResponseDto createdService = serviceItemService
+                .createService(serviceDto, authentication);
         return new ResponseEntity<>(createdService, HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasRole('SERVICE_PROVIDER')")
     @GetMapping("/me")
-    public ResponseEntity<List<ProviderServiceItem>> getMyServices(Authentication authentication) {
-        List<ProviderServiceItem> myServices = serviceItemService.getMyServices(authentication);
+    public ResponseEntity<List<com.nukkadseva.nukkadsevabackend.dto.response.ProviderServiceItemResponseDto>> getMyServices(
+            Authentication authentication) {
+        List<com.nukkadseva.nukkadsevabackend.dto.response.ProviderServiceItemResponseDto> myServices = serviceItemService
+                .getMyServices(authentication);
         return ResponseEntity.ok(myServices);
     }
 
     @PreAuthorize("hasRole('SERVICE_PROVIDER')")
     @PatchMapping("/{id}/toggle-status")
-    public ResponseEntity<ProviderServiceItem> toggleServiceStatus(
+    public ResponseEntity<com.nukkadseva.nukkadsevabackend.dto.response.ProviderServiceItemResponseDto> toggleServiceStatus(
             @PathVariable Long id,
             Authentication authentication) {
-        ProviderServiceItem updatedService = serviceItemService.toggleServiceStatus(id, authentication);
+        com.nukkadseva.nukkadsevabackend.dto.response.ProviderServiceItemResponseDto updatedService = serviceItemService
+                .toggleServiceStatus(id, authentication);
         return ResponseEntity.ok(updatedService);
     }
 
