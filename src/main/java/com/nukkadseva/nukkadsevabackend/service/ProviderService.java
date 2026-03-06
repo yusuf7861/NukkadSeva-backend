@@ -44,7 +44,7 @@ public interface ProviderService {
 
     ProviderDetailDto getProviderByIdForAdmin(Long id);
 
-    Provider getProviderByEmail(String email);
+    com.nukkadseva.nukkadsevabackend.dto.response.ProviderProfileResponseDto getProviderByEmail(String email);
 
     Provider updateServiceArea(String email, List<String> pincodes);
 }

@@ -3,6 +3,7 @@ package com.nukkadseva.nukkadsevabackend.service.implementation;
 import com.nukkadseva.nukkadsevabackend.dto.request.ProviderDto;
 import com.nukkadseva.nukkadsevabackend.dto.response.DashboardProviderDto;
 import com.nukkadseva.nukkadsevabackend.dto.response.ProviderDetailDto;
+import com.nukkadseva.nukkadsevabackend.dto.response.ProviderProfileResponseDto;
 import com.nukkadseva.nukkadsevabackend.dto.response.ProviderSummaryDto;
 import com.nukkadseva.nukkadsevabackend.entity.Provider;
 import com.nukkadseva.nukkadsevabackend.entity.Users;
@@ -16,18 +17,11 @@ import com.nukkadseva.nukkadsevabackend.repository.CityRepository;
 import com.nukkadseva.nukkadsevabackend.service.AzureBlobStorageService;
 import com.nukkadseva.nukkadsevabackend.service.ProviderService;
 import com.nukkadseva.nukkadsevabackend.service.EmailService;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.hibernate.service.spi.ServiceException;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
@@ -36,16 +30,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
-
-import java.io.IOException;
-import java.io.StringWriter;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -407,7 +394,41 @@ public class ProviderServiceImpl implements ProviderService {
     }
 
     @Override
-    public Provider getProviderByEmail(String email) {
+    @Transactional(readOnly = true)
+    public ProviderProfileResponseDto getProviderByEmail(String email) {
+        Provider provider = providerRepository.findWithUserByEmail(email)
+                .orElseThrow(() -> new ProviderNotFoundException("Provider not found with email: " + email));
+
+        return com.nukkadseva.nukkadsevabackend.dto.response.ProviderProfileResponseDto.builder()
+                .id(provider.getId())
+                .fullName(provider.getFullName())
+                .email(provider.getEmail())
+                .mobileNumber(provider.getMobileNumber())
+                .dob(provider.getDob())
+                .profilePicture(provider.getProfilePicture())
+                .bio(provider.getBio())
+                .businessName(provider.getBusinessName())
+                .serviceCategory(provider.getServiceCategory())
+                .serviceArea(provider.getServiceArea())
+                .experience(provider.getExperience())
+                .languages(provider.getLanguages())
+                .availability(provider.getAvailability())
+                .fullAddress(provider.getFullAddress())
+                .city(provider.getCity())
+                .state(provider.getState())
+                .pincode(provider.getPincode())
+                .status(provider.getStatus().name())
+                .isEmailVerified(provider.getIsEmailVerified())
+                .isApproved(provider.getIsApproved())
+                .rejectionReason(provider.getRejectionReason())
+                .govtId(provider.getGovtId())
+                .qualification(provider.getQualification())
+                .policeVerification(provider.getPoliceVerification())
+                .gstin(provider.getGstin())
+                .build();
+    }
+
+    public Provider getProviderEntityByEmail(String email) {
         return providerRepository.findByEmail(email)
                 .orElseThrow(() -> new ProviderNotFoundException("Provider not found with email: " + email));
     }
@@ -415,7 +436,7 @@ public class ProviderServiceImpl implements ProviderService {
     @Override
     @Transactional
     public Provider updateServiceArea(String email, List<String> pincodes) {
-        Provider provider = getProviderByEmail(email);
+        Provider provider = getProviderEntityByEmail(email);
         provider.setServiceArea(String.join(",", pincodes));
         return providerRepository.save(provider);
     }

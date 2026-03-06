@@ -21,5 +21,13 @@ public interface ProviderRepository extends JpaRepository<Provider, Long>, JpaSp
 
     Optional<Provider> findByEmail(String email);
 
+    @Query("""
+                SELECT DISTINCT p
+                FROM Provider p
+                LEFT JOIN FETCH p.user
+                WHERE p.email = :email
+            """)
+    Optional<Provider> findWithUserByEmail(@Param("email") String email);
+
     Optional<Provider> findByMobileNumber(String mobileNumber);
 }

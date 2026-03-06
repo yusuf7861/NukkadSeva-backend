@@ -3,7 +3,6 @@ package com.nukkadseva.nukkadsevabackend.service.implementation;
 import com.nukkadseva.nukkadsevabackend.dto.request.CustomerAddressDto;
 import com.nukkadseva.nukkadsevabackend.dto.request.CustomerProfileUpdateRequest;
 import com.nukkadseva.nukkadsevabackend.dto.request.CustomerRegistrationRequest;
-import com.nukkadseva.nukkadsevabackend.dto.request.UserRequest;
 import com.nukkadseva.nukkadsevabackend.entity.Address;
 import com.nukkadseva.nukkadsevabackend.entity.CustomerAddress;
 import com.nukkadseva.nukkadsevabackend.entity.Customers;
@@ -14,25 +13,14 @@ import com.nukkadseva.nukkadsevabackend.exception.EmailAlreadyExistsException;
 import com.nukkadseva.nukkadsevabackend.repository.*;
 import com.nukkadseva.nukkadsevabackend.service.CustomerService;
 import com.nukkadseva.nukkadsevabackend.service.EmailService;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
-import java.io.StringWriter;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import java.util.List;
@@ -100,16 +88,62 @@ public class CustomerServiceImpl implements CustomerService {
         return customerRepository.save(customer);
     }
 
+    public Customers getCustomerEntity(String email) {
+        return customerRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Customer not found with email: " + email));
+    }
+
     @Override
-    public Customers getCustomerProfile(String email) {
-        Customers customer = customerRepository.findByEmail(email)
+    @Transactional(readOnly = true)
+    public com.nukkadseva.nukkadsevabackend.dto.response.CustomerProfileResponseDto getCustomerProfile(String email) {
+        Customers customer = customerRepository.findWithAddressesByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Customer not found with email: " + email));
 
-        customer.setActiveBookingsCount(bookingRepository.countByCustomerIdAndStatusIn(customer.getId(),
-                List.of(BookingStatus.PENDING, BookingStatus.APPROVED)));
-        customer.setReviewsGivenCount(reviewRepository.countByCustomerId(customer.getId()));
+        Long activeBookingsCount = bookingRepository.countByCustomerIdAndStatusIn(customer.getId(),
+                List.of(BookingStatus.PENDING, BookingStatus.APPROVED));
+        Long reviewsGivenCount = reviewRepository.countByCustomerId(customer.getId());
 
-        return customer;
+        List<com.nukkadseva.nukkadsevabackend.dto.response.CustomerAddressResponseDto> savedAddressesDto = null;
+        if (customer.getSavedAddresses() != null) {
+            savedAddressesDto = customer.getSavedAddresses().stream()
+                    .map(addr -> com.nukkadseva.nukkadsevabackend.dto.response.CustomerAddressResponseDto.builder()
+                            .id(addr.getId())
+                            .type(addr.getType())
+                            .flatName(addr.getFlatName())
+                            .area(addr.getArea())
+                            .landmark(addr.getLandmark())
+                            .city(addr.getCity())
+                            .state(addr.getState())
+                            .pincode(addr.getPincode())
+                            .isDefault(addr.isDefault())
+                            .build())
+                    .collect(Collectors.toList());
+        }
+
+        com.nukkadseva.nukkadsevabackend.dto.response.AddressDto addressDto = null;
+        if (customer.getAddress() != null) {
+            addressDto = com.nukkadseva.nukkadsevabackend.dto.response.AddressDto.builder()
+                    .id(customer.getAddress().getId())
+                    .fullAddress(customer.getAddress().getFullAddress())
+                    .state(customer.getAddress().getState())
+                    .city(customer.getAddress().getCity())
+                    .pincode(customer.getAddress().getPincode())
+                    .build();
+        }
+
+        return com.nukkadseva.nukkadsevabackend.dto.response.CustomerProfileResponseDto.builder()
+                .id(customer.getId())
+                .fullName(customer.getFullName())
+                .mobileNumber(customer.getMobileNumber())
+                .email(customer.getEmail())
+                .photograph(customer.getPhotograph())
+                .address(addressDto)
+                .savedAddresses(savedAddressesDto)
+                .activeBookingsCount(activeBookingsCount)
+                .reviewsGivenCount(reviewsGivenCount)
+                .createdAt(customer.getCreatedAt())
+                .updatedAt(customer.getUpdatedAt())
+                .build();
     }
 
     @Override
@@ -173,7 +207,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     @Transactional
     public CustomerAddressDto addAddress(String email, CustomerAddressDto addressDto) {
-        Customers customer = getCustomerProfile(email);
+        Customers customer = getCustomerEntity(email);
 
         CustomerAddress address = new CustomerAddress();
         address.setCustomer(customer);
@@ -204,7 +238,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     @Transactional
     public CustomerAddressDto updateAddress(String email, Long addressId, CustomerAddressDto addressDto) {
-        Customers customer = getCustomerProfile(email);
+        Customers customer = getCustomerEntity(email);
         CustomerAddress address = customerAddressRepository.findByIdAndCustomer(addressId, customer)
                 .orElseThrow(() -> new RuntimeException("Address not found"));
 
@@ -226,7 +260,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     @Transactional
     public void deleteAddress(String email, Long addressId) {
-        Customers customer = getCustomerProfile(email);
+        Customers customer = getCustomerEntity(email);
         CustomerAddress address = customerAddressRepository.findByIdAndCustomer(addressId, customer)
                 .orElseThrow(() -> new RuntimeException("Address not found"));
 
@@ -246,7 +280,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     @Transactional
     public void setDefaultAddress(String email, Long addressId) {
-        Customers customer = getCustomerProfile(email);
+        Customers customer = getCustomerEntity(email);
 
         List<CustomerAddress> allAddresses = customerAddressRepository.findByCustomer(customer);
         for (CustomerAddress addr : allAddresses) {
@@ -261,7 +295,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public List<CustomerAddressDto> getSavedAddresses(String email) {
-        Customers customer = getCustomerProfile(email);
+        Customers customer = getCustomerEntity(email);
         return customerAddressRepository.findByCustomer(customer)
                 .stream()
                 .map(this::mapToDto)
