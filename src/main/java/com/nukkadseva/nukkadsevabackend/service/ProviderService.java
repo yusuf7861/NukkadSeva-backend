@@ -18,11 +18,11 @@ public interface ProviderService {
 
     boolean verifyProviderEmail(String token);
 
-    List<Provider> getPendingProviders();
+    List<ProviderSummaryDto> getPendingProviders();
 
-    List<Provider> getAllProviders();
+    List<ProviderSummaryDto> getAllProviders();
 
-    List<Provider> getProvidersByStatus(ProviderStatus status);
+    List<ProviderSummaryDto> getProvidersByStatus(ProviderStatus status);
 
     Provider approveProvider(Long providerId) throws TemplateException, IOException;
 

@@ -168,18 +168,24 @@ public class ProviderServiceImpl implements ProviderService {
     }
 
     @Override
-    public List<Provider> getPendingProviders() {
-        return providerRepository.findByStatus(ProviderStatus.PENDING);
+    public List<ProviderSummaryDto> getPendingProviders() {
+        return providerRepository.findByStatus(ProviderStatus.PENDING).stream()
+                .map(providerMapper::toProviderSummaryDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<Provider> getAllProviders() {
-        return providerRepository.findAll();
+    public List<ProviderSummaryDto> getAllProviders() {
+        return providerRepository.findAll().stream()
+                .map(providerMapper::toProviderSummaryDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<Provider> getProvidersByStatus(ProviderStatus status) {
-        return providerRepository.findByStatus(status);
+    public List<ProviderSummaryDto> getProvidersByStatus(ProviderStatus status) {
+        return providerRepository.findByStatus(status).stream()
+                .map(providerMapper::toProviderSummaryDto)
+                .collect(Collectors.toList());
     }
 
     @Override
