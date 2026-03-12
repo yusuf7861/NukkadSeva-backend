@@ -1,6 +1,7 @@
 package com.nukkadseva.nukkadsevabackend.controller;
 
 import com.nukkadseva.nukkadsevabackend.dto.request.ServiceDto;
+import com.nukkadseva.nukkadsevabackend.dto.response.ProviderServiceItemResponseDto;
 import com.nukkadseva.nukkadsevabackend.entity.ProviderServiceItem;
 import com.nukkadseva.nukkadsevabackend.service.ProviderServiceItemService;
 import jakarta.validation.Valid;
@@ -26,29 +27,29 @@ public class ServiceController {
 
     @PreAuthorize("hasRole('SERVICE_PROVIDER')")
     @PostMapping
-    public ResponseEntity<com.nukkadseva.nukkadsevabackend.dto.response.ProviderServiceItemResponseDto> createService(
+    public ResponseEntity<ProviderServiceItemResponseDto> createService(
             @Valid @RequestBody ServiceDto serviceDto,
             Authentication authentication) {
-        com.nukkadseva.nukkadsevabackend.dto.response.ProviderServiceItemResponseDto createdService = serviceItemService
+        ProviderServiceItemResponseDto createdService = serviceItemService
                 .createService(serviceDto, authentication);
         return new ResponseEntity<>(createdService, HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasRole('SERVICE_PROVIDER')")
     @GetMapping("/me")
-    public ResponseEntity<List<com.nukkadseva.nukkadsevabackend.dto.response.ProviderServiceItemResponseDto>> getMyServices(
+    public ResponseEntity<List<ProviderServiceItemResponseDto>> getMyServices(
             Authentication authentication) {
-        List<com.nukkadseva.nukkadsevabackend.dto.response.ProviderServiceItemResponseDto> myServices = serviceItemService
+        List<ProviderServiceItemResponseDto> myServices = serviceItemService
                 .getMyServices(authentication);
         return ResponseEntity.ok(myServices);
     }
 
     @PreAuthorize("hasRole('SERVICE_PROVIDER')")
     @PatchMapping("/{id}/toggle-status")
-    public ResponseEntity<com.nukkadseva.nukkadsevabackend.dto.response.ProviderServiceItemResponseDto> toggleServiceStatus(
+    public ResponseEntity<ProviderServiceItemResponseDto> toggleServiceStatus(
             @PathVariable Long id,
             Authentication authentication) {
-        com.nukkadseva.nukkadsevabackend.dto.response.ProviderServiceItemResponseDto updatedService = serviceItemService
+        ProviderServiceItemResponseDto updatedService = serviceItemService
                 .toggleServiceStatus(id, authentication);
         return ResponseEntity.ok(updatedService);
     }
