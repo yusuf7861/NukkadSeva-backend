@@ -82,6 +82,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ReviewResponseDto> getProviderReviews(Authentication authentication) {
         String email = authentication.getName();
         Provider provider = providerRepository.findByEmail(email)

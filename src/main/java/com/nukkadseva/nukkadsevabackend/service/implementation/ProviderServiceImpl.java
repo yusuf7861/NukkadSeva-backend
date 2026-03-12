@@ -62,7 +62,7 @@ public class ProviderServiceImpl implements ProviderService {
 
     @Override
     @Transactional
-    public Provider registerProvider(ProviderDto providerDto) {
+    public ProviderProfileResponseDto registerProvider(ProviderDto providerDto) {
         // Check for duplicate email
         if (providerRepository.findByEmail(providerDto.getEmail()).isPresent()) {
             throw new RuntimeException("A provider with this email already exists");
@@ -137,7 +137,7 @@ public class ProviderServiceImpl implements ProviderService {
         // Send verification email
         sendVerificationEmail(provider.getEmail(), verificationToken, provider.getId());
 
-        return savedProvider;
+        return getProviderByEmail(provider.getEmail());
     }
 
     @Override
@@ -168,6 +168,7 @@ public class ProviderServiceImpl implements ProviderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ProviderSummaryDto> getPendingProviders() {
         return providerRepository.findByStatus(ProviderStatus.PENDING).stream()
                 .map(providerMapper::toProviderSummaryDto)
@@ -175,6 +176,7 @@ public class ProviderServiceImpl implements ProviderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ProviderSummaryDto> getAllProviders() {
         return providerRepository.findAll().stream()
                 .map(providerMapper::toProviderSummaryDto)
@@ -182,6 +184,7 @@ public class ProviderServiceImpl implements ProviderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ProviderSummaryDto> getProvidersByStatus(ProviderStatus status) {
         return providerRepository.findByStatus(status).stream()
                 .map(providerMapper::toProviderSummaryDto)
@@ -284,6 +287,7 @@ public class ProviderServiceImpl implements ProviderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<DashboardProviderDto> searchProviders(String category, String city, String pincode, int page,
             int limit) {
         if (page < 1) {
@@ -375,6 +379,7 @@ public class ProviderServiceImpl implements ProviderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProviderDetailDto getProviderByIdForAdmin(Long id) {
         log.info("Fetching provider details of ID: {}", id);
 

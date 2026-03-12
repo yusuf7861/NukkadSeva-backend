@@ -3,6 +3,8 @@ package com.nukkadseva.nukkadsevabackend.service.implementation;
 import com.nukkadseva.nukkadsevabackend.dto.request.CustomerAddressDto;
 import com.nukkadseva.nukkadsevabackend.dto.request.CustomerProfileUpdateRequest;
 import com.nukkadseva.nukkadsevabackend.dto.request.CustomerRegistrationRequest;
+import com.nukkadseva.nukkadsevabackend.dto.response.AddressDto;
+import com.nukkadseva.nukkadsevabackend.dto.response.CustomerProfileResponseDto;
 import com.nukkadseva.nukkadsevabackend.entity.Address;
 import com.nukkadseva.nukkadsevabackend.entity.CustomerAddress;
 import com.nukkadseva.nukkadsevabackend.entity.Customers;
@@ -95,7 +97,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     @Transactional(readOnly = true)
-    public com.nukkadseva.nukkadsevabackend.dto.response.CustomerProfileResponseDto getCustomerProfile(String email) {
+    public CustomerProfileResponseDto getCustomerProfile(String email) {
         Customers customer = customerRepository.findWithAddressesByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Customer not found with email: " + email));
 
@@ -120,9 +122,9 @@ public class CustomerServiceImpl implements CustomerService {
                     .collect(Collectors.toList());
         }
 
-        com.nukkadseva.nukkadsevabackend.dto.response.AddressDto addressDto = null;
+        AddressDto addressDto = null;
         if (customer.getAddress() != null) {
-            addressDto = com.nukkadseva.nukkadsevabackend.dto.response.AddressDto.builder()
+            addressDto = AddressDto.builder()
                     .id(customer.getAddress().getId())
                     .fullAddress(customer.getAddress().getFullAddress())
                     .state(customer.getAddress().getState())
@@ -131,7 +133,7 @@ public class CustomerServiceImpl implements CustomerService {
                     .build();
         }
 
-        return com.nukkadseva.nukkadsevabackend.dto.response.CustomerProfileResponseDto.builder()
+        return CustomerProfileResponseDto.builder()
                 .id(customer.getId())
                 .fullName(customer.getFullName())
                 .mobileNumber(customer.getMobileNumber())
@@ -294,6 +296,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<CustomerAddressDto> getSavedAddresses(String email) {
         Customers customer = getCustomerEntity(email);
         return customerAddressRepository.findByCustomer(customer)

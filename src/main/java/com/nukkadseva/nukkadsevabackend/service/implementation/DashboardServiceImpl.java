@@ -17,6 +17,7 @@ import com.nukkadseva.nukkadsevabackend.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -32,6 +33,7 @@ public class DashboardServiceImpl implements DashboardService {
         private final ReviewRepository reviewRepository;
 
         @Override
+        @Transactional(readOnly = true)
         public CustomerDashboardDto getCustomerDashboard(Authentication authentication) {
                 String email = authentication.getName();
                 Customers customer = customerRepository.findByEmail(email)
@@ -84,6 +86,7 @@ public class DashboardServiceImpl implements DashboardService {
         }
 
         @Override
+        @Transactional(readOnly = true)
         public ProviderDashboardDto getProviderDashboard(Authentication authentication) {
                 String email = authentication.getName();
                 Provider provider = providerRepository.findByEmail(email)

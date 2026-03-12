@@ -46,6 +46,7 @@ public class ProviderAreaServiceImpl implements ProviderAreaService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ProviderAreaResponse> getMyAreas(Authentication authentication) {
         String email = authentication.getName();
         Provider provider = providerRepository.findByEmail(email)

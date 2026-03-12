@@ -2,6 +2,8 @@ package com.nukkadseva.nukkadsevabackend.controller;
 
 import com.nukkadseva.nukkadsevabackend.dto.request.CustomerProfileUpdateRequest;
 import com.nukkadseva.nukkadsevabackend.dto.request.CustomerRegistrationRequest;
+import com.nukkadseva.nukkadsevabackend.dto.response.CustomerDashboardDto;
+import com.nukkadseva.nukkadsevabackend.dto.response.CustomerProfileResponseDto;
 import com.nukkadseva.nukkadsevabackend.service.CustomerService;
 import com.nukkadseva.nukkadsevabackend.security.AuthUser;
 import com.nukkadseva.nukkadsevabackend.security.CurrentUser;
@@ -9,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import com.nukkadseva.nukkadsevabackend.dto.request.CustomerAddressDto;
@@ -37,7 +40,7 @@ public class CustomerController {
     }
 
     @GetMapping("/profile")
-    public ResponseEntity<com.nukkadseva.nukkadsevabackend.dto.response.CustomerProfileResponseDto> getCustomerProfile(
+    public ResponseEntity<CustomerProfileResponseDto> getCustomerProfile(
             @CurrentUser AuthUser user) {
         return ResponseEntity.ok(customerService.getCustomerProfile(user.getEmail()));
     }
@@ -50,8 +53,7 @@ public class CustomerController {
     }
 
     @GetMapping("/dashboard")
-    public ResponseEntity<com.nukkadseva.nukkadsevabackend.dto.response.CustomerDashboardDto> getDashboard(
-            org.springframework.security.core.Authentication authentication) {
+    public ResponseEntity<CustomerDashboardDto> getDashboard(Authentication authentication) {
         return ResponseEntity.ok(dashboardService.getCustomerDashboard(authentication));
     }
 
