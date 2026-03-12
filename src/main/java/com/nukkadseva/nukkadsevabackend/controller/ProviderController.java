@@ -1,7 +1,7 @@
 package com.nukkadseva.nukkadsevabackend.controller;
 
 import com.nukkadseva.nukkadsevabackend.dto.request.ProviderDto;
-import com.nukkadseva.nukkadsevabackend.entity.Provider;
+import com.nukkadseva.nukkadsevabackend.dto.response.ProviderProfileResponseDto;
 import com.nukkadseva.nukkadsevabackend.service.DashboardService;
 import com.nukkadseva.nukkadsevabackend.service.ProviderService;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +25,7 @@ public class ProviderController {
     @PostMapping(value = "/register", consumes = "multipart/form-data")
     public ResponseEntity<?> registerProvider(@ModelAttribute ProviderDto providerDto) {
         try {
-            Provider registeredProvider = providerService.registerProvider(providerDto);
+            ProviderProfileResponseDto registeredProvider = providerService.registerProvider(providerDto);
             return new ResponseEntity<>(registeredProvider, HttpStatus.CREATED);
         } catch (IOException e) {
             return new ResponseEntity<>(

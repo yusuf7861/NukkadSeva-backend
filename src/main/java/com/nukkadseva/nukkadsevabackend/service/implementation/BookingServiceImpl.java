@@ -16,7 +16,7 @@ import com.nukkadseva.nukkadsevabackend.repository.CustomerAddressRepository;
 import com.nukkadseva.nukkadsevabackend.repository.CustomerRepository;
 import com.nukkadseva.nukkadsevabackend.repository.ProviderRepository;
 import com.nukkadseva.nukkadsevabackend.service.BookingService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.core.Authentication;
@@ -112,6 +112,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<BookingResponseDto> getCustomerBookings(Authentication authentication) {
         String email = authentication.getName();
         Customers customer = customerRepository.findByEmail(email)
@@ -122,6 +123,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<BookingResponseDto> getProviderBookings(Authentication authentication) {
         String email = authentication.getName();
         Provider provider = providerRepository.findByEmail(email)

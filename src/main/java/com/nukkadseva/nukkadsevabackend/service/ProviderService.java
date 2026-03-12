@@ -13,8 +13,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+import com.nukkadseva.nukkadsevabackend.dto.response.ProviderProfileResponseDto;
+
 public interface ProviderService {
-    Provider registerProvider(ProviderDto providerDto) throws IOException;
+    ProviderProfileResponseDto registerProvider(ProviderDto providerDto) throws IOException;
 
     boolean verifyProviderEmail(String token);
 
