@@ -106,6 +106,11 @@ public class AdminController {
 
     // ============ City Management Endpoints ============
 
+    @GetMapping("/cities")
+    public ResponseEntity<List<CityWithPincodesResponse>> getAllCities() {
+        return ResponseEntity.ok(cityService.getAllCitiesWithPincodes());
+    }
+
     @PostMapping("/cities")
     public ResponseEntity<?> addCityWithPincodes(@Valid @RequestBody CityWithPincodesRequest request) {
         try {

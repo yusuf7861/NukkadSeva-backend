@@ -2,6 +2,7 @@ package com.nukkadseva.nukkadsevabackend.service.implementation;
 
 import com.nukkadseva.nukkadsevabackend.dto.request.ServiceDto;
 import com.nukkadseva.nukkadsevabackend.dto.response.ProviderServiceItemResponseDto;
+import com.nukkadseva.nukkadsevabackend.dto.response.ServiceSearchResultDto;
 import com.nukkadseva.nukkadsevabackend.entity.Provider;
 import com.nukkadseva.nukkadsevabackend.entity.ProviderServiceItem;
 import com.nukkadseva.nukkadsevabackend.exception.ProviderNotFoundException;
@@ -55,8 +56,25 @@ public class ProviderServiceItemServiceImpl implements ProviderServiceItemServic
     }
 
     @Override
-    public List<ProviderServiceItem> searchServices(String city, String pincode, Long providerId) {
-        return serviceItemRepository.searchServices(city, pincode, providerId);
+    @Transactional(readOnly = true)
+    public List<ServiceSearchResultDto> searchServices(String city, String pincode, Long providerId) {
+        List<ProviderServiceItem> services = serviceItemRepository.searchServices(city, pincode, providerId);
+
+        return services.stream()
+                .map((ProviderServiceItem service) -> ServiceSearchResultDto.builder()
+                        .id(service.getId())
+                        .name(service.getName())
+                        .description(service.getDescription())
+                        .category(service.getCategory())
+                        .price(service.getPrice())
+                        .durationMinutes(service.getDurationMinutes())
+                        .providerName(service.getProvider().getFullName())
+                        .providerId(service.getProvider().getId())
+                        .pincodes(service.getProvider().getProviderAreas().stream()
+                                .flatMap(area -> area.getPincodes().stream()).collect(Collectors.toList()))
+                        .providerVerified(Boolean.TRUE.equals(service.getProvider().getIsApproved()))
+                        .build())
+                .collect(Collectors.toList());
     }
 
     @Override
