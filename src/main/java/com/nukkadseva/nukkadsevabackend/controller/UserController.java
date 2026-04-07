@@ -119,17 +119,4 @@ public class UserController {
                 .body(new ApiResponse("PROFILE_UPDATED", "Profile Picture Updated Successfully"));
     }
 
-    @PostMapping("/debug-login")
-    public ResponseEntity<String> debugLogin(@Valid @RequestBody UserRequest userRequest) {
-        try {
-            SecurityContextHolder.getContext()
-                    .getAuthentication();
-            authService.login(userRequest);
-            return ResponseEntity.ok("Login Successful");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Login failed: " + e.getMessage() + " | Class: " + e.getClass().getName());
-        }
-    }
 }

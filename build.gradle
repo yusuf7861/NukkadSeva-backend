@@ -72,7 +72,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
     compileOnly 'org.projectlombok:lombok:1.18.32'
+    compileOnly 'org.springframework.boot:spring-boot-configuration-processor'
     annotationProcessor 'org.projectlombok:lombok:1.18.32'
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
     annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
 
     runtimeOnly 'org.postgresql:postgresql'

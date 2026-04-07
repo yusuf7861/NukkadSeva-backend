@@ -23,9 +23,11 @@ FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
+ENV SPRING_PROFILES_ACTIVE=prod
+
 # Copy the built JAR from the builder stage
 COPY --from=builder /app/build/libs/*.jar app.jar
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["sh", "-c", "java ${JAVA_OPTS} -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:-prod} -jar app.jar"]
