@@ -71,6 +71,10 @@ dependencies {
     // Actuator
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
+    // bucket4j
+    implementation 'com.bucket4j:bucket4j-core:8.10.1'
+    implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8'
+
     compileOnly 'org.projectlombok:lombok:1.18.32'
     compileOnly 'org.springframework.boot:spring-boot-configuration-processor'
     annotationProcessor 'org.projectlombok:lombok:1.18.32'
