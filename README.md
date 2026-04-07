@@ -41,11 +41,69 @@ Using Gradle wrapper:
 ./gradlew build
 
 # Run the Spring Boot application
-./gradlew bootRun
+SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun
 ```
 
 The API will be available at `http://localhost:8080`.
 The OpenAPI documentation is accessible at `http://localhost:8080/swagger-ui.html`.
+
+---
+
+## 🛠️ Development Mode Workflow
+
+Since profile selection is explicit, always run local work with the `dev` profile.
+
+### Step 1: Create local env file
+
+Create `.env.dev` in project root:
+
+```env
+SPRING_PROFILES_ACTIVE=dev
+
+# Database
+DB_URL=jdbc:postgresql://localhost:5432/nukkadseva_dev
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+
+# JWT (use a strong base64 value)
+JWT_SECRET_KEY=<your-base64-secret-at-least-32-bytes>
+
+# Local/dev mail values
+MAIL_HOST=smtp.gmail.com
+MAIL_USERNAME=dev@example.com
+MAIL_PASSWORD=dev-password
+
+# App
+APP_BASE_URL=http://localhost:8080
+
+# Optional for Google login testing
+GOOGLE_CLIENT_ID=<optional>
+GOOGLE_CLIENT_SECRET=<optional>
+```
+
+### Step 2: Start backend in dev profile
+
+```bash
+# Option A: one command
+SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun
+
+# Option B: export once in current terminal
+export SPRING_PROFILES_ACTIVE=dev
+./gradlew bootRun
+```
+
+### Step 3: Validate local run
+
+- API: `http://localhost:8080`
+- Swagger (dev only): `http://localhost:8080/swagger-ui.html`
+
+### Dev profile behavior
+
+- Uses `application-dev.yml`
+- Uses local file storage (`storage.type=local`)
+- Enables Swagger/OpenAPI for local testing
+- Keeps verbose logging for debugging
+- Uses localhost-friendly cookie settings
 
 ---
 
@@ -83,6 +141,13 @@ MAIL_PASSWORD=<your-app-password>
 
 # APPLICATION CONFIG
 APP_BASE_URL=http://localhost:8080
+
+# SPRING PROFILE
+SPRING_PROFILES_ACTIVE=prod
+
+# NOTE
+# In prod, startup now fails fast if DB/JWT/Azure (when storage.type=azure)
+# values are missing, or if MAIL_USERNAME / MAIL_PASSWORD are left as defaults.
 
 # OAUTH CONFIG
 GOOGLE_CLIENT_ID=<your-google-client-id>
@@ -231,9 +296,61 @@ This platform provides dedicated endpoints for:
 Check `/swagger-ui.html` during runtime to inspect and test all API routes directly.
 
 ## 🤝 Contributing
-1. Fork the feature branch
-2. Ensure you adhere to standard Java/Spring Boot conventions
-3. Submit a Pull Request.
+
+Follow this flow for consistent, safe contributions.
+
+### 1) Create a feature branch
+
+```bash
+git checkout -b feat/<short-feature-name>
+```
+
+### 2) Run locally in dev profile
+
+```bash
+SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun
+```
+
+### 3) Implement changes
+
+- Keep PRs focused and small
+- Add or update tests for behavior changes
+- Do not commit secrets, `.env` files, or generated artifacts
+
+### 4) Run checks before push
+
+```bash
+./gradlew compileJava
+./gradlew test
+```
+
+If the full suite fails due to local/external dependencies, run targeted tests for modified modules and mention this in PR notes.
+
+### 5) Commit with clear message
+
+```bash
+git add .
+git commit -m "feat: <what changed>"
+```
+
+### 6) Push and open PR
+
+```bash
+git push origin feat/<short-feature-name>
+```
+
+Include in PR description:
+
+- what changed
+- why it changed
+- how it was tested
+- config/env impact
+
+### 7) Production safety rules
+
+- Keep explicit profile usage (`SPRING_PROFILES_ACTIVE`)
+- Do not reintroduce debug-only endpoints
+- Preserve production-safe defaults and security hardening
 
 ---
 
