@@ -15,7 +15,7 @@ public class RateLimitPolicyResolver {
 
         // AUTHENTICATED USER ENDPOINTS
         if (uri.contains("/api/login") ||
-            uri.contains("/api/reset-password") || uri.contains("/api/forggot-password") || uri.contains("/api/verify-email") || uri.contains("/api/auth/google")) {
+            uri.contains("/api/reset-password") || uri.contains("/api/forgot-password") || uri.contains("/api/verify-email") || uri.contains("/api/auth/google")) {
             return RateLimitType.AUTH_API;
         }
 

@@ -51,7 +51,7 @@ public class RateLimitService {
             case PUBLIC_API -> properties.getPublicApi();
             case USER_API -> properties.getUser();
             case BOOKING_API -> properties.getBooking();
-            case ADMIN_API -> properties.getAdmin_api();
+            case ADMIN_API -> properties.getAdminApi();
             default -> null;
         };
     }

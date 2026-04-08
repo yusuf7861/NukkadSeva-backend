@@ -32,3 +32,6 @@ app:
   cookie:
     secure: true
     same-site: none
+
+server:
+  forward-headers-strategy: native
