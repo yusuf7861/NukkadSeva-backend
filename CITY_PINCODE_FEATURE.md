@@ -256,3 +256,4 @@ Potential improvements for this feature:
 - Analytics on city/pincode usage
 - Integration with external pincode validation APIs
 
+- testing the code by vaseekur
