@@ -24,14 +24,14 @@ public class RateLimitService {
     }
 
     public Bucket resolveBucket(String key, RateLimitType type) {
-        return cache.get(key + "_" + type, k -> createBucket(type));
-    }
-
-    public Bucket createBucket(RateLimitType type) {
         RateLimitProperties.Limit config = getConfig(type);
 
         if (config == null) return null;
 
+        return cache.get(key + "_" + type, k -> createBucket(config));
+    }
+
+    public Bucket createBucket(RateLimitProperties.Limit config) {
         Bandwidth limit = Bandwidth.classic(
                 config.getCapacity(),
                 Refill.intervally(
