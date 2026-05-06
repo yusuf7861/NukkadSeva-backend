@@ -47,7 +47,7 @@ server:
 jwt:
   secret:
     key: ${JWT_SECRET_KEY}
-    expiration: 86400000
+    expiration: 180000
 
 # Google OAuth
 google:

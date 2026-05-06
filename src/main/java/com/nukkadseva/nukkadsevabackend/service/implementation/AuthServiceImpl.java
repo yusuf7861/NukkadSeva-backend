@@ -5,6 +5,7 @@ import com.nukkadseva.nukkadsevabackend.dto.request.ResetPasswordRequest;
 import com.nukkadseva.nukkadsevabackend.dto.request.UserRequest;
 import com.nukkadseva.nukkadsevabackend.dto.response.AuthResponse;
 import com.nukkadseva.nukkadsevabackend.entity.Customers;
+import com.nukkadseva.nukkadsevabackend.entity.RefreshToken;
 import com.nukkadseva.nukkadsevabackend.entity.Users;
 import com.nukkadseva.nukkadsevabackend.entity.enums.AuthProvider;
 import com.nukkadseva.nukkadsevabackend.entity.enums.Role;
@@ -15,9 +16,12 @@ import com.nukkadseva.nukkadsevabackend.oauth.GoogleTokenService;
 import com.nukkadseva.nukkadsevabackend.oauth.OAuthUserInfo;
 import com.nukkadseva.nukkadsevabackend.repository.CustomerRepository;
 import com.nukkadseva.nukkadsevabackend.repository.UserRepository;
+import com.nukkadseva.nukkadsevabackend.security.AuthUser;
+import com.nukkadseva.nukkadsevabackend.security.CustomUserDetails;
 import com.nukkadseva.nukkadsevabackend.security.JwtUtil;
 import com.nukkadseva.nukkadsevabackend.service.AuthService;
 import com.nukkadseva.nukkadsevabackend.service.EmailService;
+import com.nukkadseva.nukkadsevabackend.service.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -47,6 +51,7 @@ public class AuthServiceImpl implements AuthService {
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final GoogleTokenService googleTokenService;
+    private final RefreshTokenService refreshTokenService;
 
     @Override
     public AuthResponse login(UserRequest userRequest) {
@@ -56,10 +61,8 @@ public class AuthServiceImpl implements AuthService {
                             userRequest.getEmail(),
                             userRequest.getPassword()));
 
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-
-            Users user = userRepository.findByEmail(userDetails.getUsername())
-                    .orElseThrow(() -> new UserAuthenticationException("User not found"));
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            Users user = userDetails.getUser();
 
             if (!user.isVerified()) {
                 throw new UserAuthenticationException("Please verify your email before logging in");
@@ -124,10 +127,11 @@ public class AuthServiceImpl implements AuthService {
         String role = user.getRole().name();
         Long profileId = getProfileId(user);
         String token = jwtUtil.generateToken(user.getId(), user.getEmail(), role, profileId);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
 
         return AuthResponse.builder()
                 .accessToken(token)
-                .refreshToken(null)
+                .refreshToken(refreshToken.getToken())
                 .tokenType("Bearer")
                 .build();
     }

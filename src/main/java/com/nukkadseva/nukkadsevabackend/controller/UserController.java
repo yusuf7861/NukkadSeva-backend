@@ -4,6 +4,12 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.nukkadseva.nukkadsevabackend.dto.request.RefreshTokenRequest;
+import com.nukkadseva.nukkadsevabackend.dto.response.RefreshTokenResponse;
+import com.nukkadseva.nukkadsevabackend.entity.RefreshToken;
+import com.nukkadseva.nukkadsevabackend.security.AuthUser;
+import com.nukkadseva.nukkadsevabackend.security.JwtUtil;
+import com.nukkadseva.nukkadsevabackend.service.RefreshTokenService;
 import com.nukkadseva.nukkadsevabackend.util.FileValidationUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -34,6 +40,8 @@ import com.nukkadseva.nukkadsevabackend.service.AuthService;
 public class UserController {
     private final UserService userService;
     private final AuthService authService;
+    private final RefreshTokenService refreshTokenService;
+    private final JwtUtil jwtUtil;
 
     @Value("${app.cookie.secure:true}")
     private boolean cookieSecure;
@@ -88,6 +96,23 @@ public class UserController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(response);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<RefreshTokenResponse> refreshToken(@RequestBody RefreshTokenRequest request) {
+        String oldToken = request.refreshToken();
+
+        RefreshToken refreshToken = refreshTokenService.verifyRefreshToken(oldToken);
+
+        refreshTokenService.revokeRefreshToken(oldToken);
+
+        RefreshToken newRt = refreshTokenService.createRefreshToken(refreshToken.getUser().getId());
+        String newAccessToken = jwtUtil.generateToken(refreshToken.getUser().getId(),
+                refreshToken.getUser().getEmail(),
+                refreshToken.getUser().getRole().name(),
+                newRt.getUser().getCustomers() != null ? newRt.getUser().getCustomers().getId() : null);
+
+        return ResponseEntity.ok(new RefreshTokenResponse(newAccessToken, newRt.getToken(), "Bearer"));
     }
 
     @PostMapping("/forgot-password")

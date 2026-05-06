@@ -61,6 +61,7 @@ public class SecurityConfig {
                                                                                 "/api/reset-password",
                                                                                 "/api/provider/verify-email",
                                                                                 "/api/verify-email",
+                                                                                "/api/refresh",
                                                                                 "/ws/**",
                                                                                 // Swagger endpoints
                                                                                 "/v3/api-docs/**",
