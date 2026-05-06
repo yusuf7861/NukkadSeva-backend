@@ -6,9 +6,6 @@ import java.util.Map;
 
 import com.nukkadseva.nukkadsevabackend.dto.request.RefreshTokenRequest;
 import com.nukkadseva.nukkadsevabackend.dto.response.RefreshTokenResponse;
-import com.nukkadseva.nukkadsevabackend.entity.RefreshToken;
-import com.nukkadseva.nukkadsevabackend.security.AuthUser;
-import com.nukkadseva.nukkadsevabackend.security.JwtUtil;
 import com.nukkadseva.nukkadsevabackend.service.RefreshTokenService;
 import com.nukkadseva.nukkadsevabackend.util.FileValidationUtil;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,7 +38,6 @@ public class UserController {
     private final UserService userService;
     private final AuthService authService;
     private final RefreshTokenService refreshTokenService;
-    private final JwtUtil jwtUtil;
 
     @Value("${app.cookie.secure:true}")
     private boolean cookieSecure;
@@ -99,20 +95,21 @@ public class UserController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<RefreshTokenResponse> refreshToken(@RequestBody RefreshTokenRequest request) {
-        String oldToken = request.refreshToken();
+    public ResponseEntity<RefreshTokenResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request,
+            HttpServletResponse response) {
+        RefreshTokenResponse tokenResponse = refreshTokenService.rotateRefreshToken(request.refreshToken());
 
-        RefreshToken refreshToken = refreshTokenService.verifyRefreshToken(oldToken);
+        ResponseCookie cookie = ResponseCookie.from("jwt", tokenResponse.accessToken())
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .path("/")
+                .maxAge(Duration.ofDays(1))
+                .sameSite(cookieSameSite)
+                .build();
 
-        refreshTokenService.revokeRefreshToken(oldToken);
+        response.addHeader("Set-Cookie", cookie.toString());
 
-        RefreshToken newRt = refreshTokenService.createRefreshToken(refreshToken.getUser().getId());
-        String newAccessToken = jwtUtil.generateToken(refreshToken.getUser().getId(),
-                refreshToken.getUser().getEmail(),
-                refreshToken.getUser().getRole().name(),
-                newRt.getUser().getCustomers() != null ? newRt.getUser().getCustomers().getId() : null);
-
-        return ResponseEntity.ok(new RefreshTokenResponse(newAccessToken, newRt.getToken(), "Bearer"));
+        return ResponseEntity.ok(tokenResponse);
     }
 
     @PostMapping("/forgot-password")

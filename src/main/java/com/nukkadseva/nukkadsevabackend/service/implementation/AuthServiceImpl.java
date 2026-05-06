@@ -16,7 +16,6 @@ import com.nukkadseva.nukkadsevabackend.oauth.GoogleTokenService;
 import com.nukkadseva.nukkadsevabackend.oauth.OAuthUserInfo;
 import com.nukkadseva.nukkadsevabackend.repository.CustomerRepository;
 import com.nukkadseva.nukkadsevabackend.repository.UserRepository;
-import com.nukkadseva.nukkadsevabackend.security.AuthUser;
 import com.nukkadseva.nukkadsevabackend.security.CustomUserDetails;
 import com.nukkadseva.nukkadsevabackend.security.JwtUtil;
 import com.nukkadseva.nukkadsevabackend.service.AuthService;

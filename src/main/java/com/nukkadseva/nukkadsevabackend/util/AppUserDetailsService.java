@@ -1,11 +1,9 @@
 package com.nukkadseva.nukkadsevabackend.util;
 
 import com.nukkadseva.nukkadsevabackend.entity.Users;
-import com.nukkadseva.nukkadsevabackend.entity.enums.Role;
 import com.nukkadseva.nukkadsevabackend.repository.UserRepository;
 import com.nukkadseva.nukkadsevabackend.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
