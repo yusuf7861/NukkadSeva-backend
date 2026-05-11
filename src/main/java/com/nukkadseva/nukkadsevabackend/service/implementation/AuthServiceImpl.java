@@ -21,6 +21,7 @@ import com.nukkadseva.nukkadsevabackend.security.JwtUtil;
 import com.nukkadseva.nukkadsevabackend.service.AuthService;
 import com.nukkadseva.nukkadsevabackend.service.EmailService;
 import com.nukkadseva.nukkadsevabackend.service.RefreshTokenService;
+import com.nukkadseva.nukkadsevabackend.service.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -51,6 +52,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final GoogleTokenService googleTokenService;
     private final RefreshTokenService refreshTokenService;
+    private final RedisService redisService;
 
     @Override
     public AuthResponse login(UserRequest userRequest) {
@@ -163,6 +165,9 @@ public class AuthServiceImpl implements AuthService {
         String otp = String.format("%06d", new java.security.SecureRandom().nextInt(1000000));
 
         user.setVerificationToken(otp);
+        redisService.set(
+                "password-reset-otp:"+ user.getEmail(), otp, 5 * 60
+        );
         user.setTokenExpiresAt(LocalDateTime.now().plusMinutes(15));
         userRepository.save(user);
 
