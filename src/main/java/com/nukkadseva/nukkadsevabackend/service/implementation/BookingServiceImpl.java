@@ -291,6 +291,7 @@ public class BookingServiceImpl implements BookingService {
                 .status(booking.getStatus())
                 .paymentStatus(booking.getPaymentStatus())
                 .priceEstimate(booking.getPriceEstimate())
+                .serviceAddress(booking.getServiceAddress())
                 .note(booking.getNote())
                 .createdAt(booking.getCreatedAt())
                 .completionOtp(booking.getCompletionOtp())

@@ -8,10 +8,6 @@ spring:
       max-request-size: 50MB
 
   # Database Configuration
-  datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
 
   jpa: {}
 
@@ -36,7 +32,7 @@ spring:
 
   # Profile must be set explicitly per environment
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE}
+    active: ${SPRING_PROFILES_ACTIVE:dev}
 
 # Server Configuration
 server:

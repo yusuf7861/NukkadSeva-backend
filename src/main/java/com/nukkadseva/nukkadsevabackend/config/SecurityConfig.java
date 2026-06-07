@@ -94,7 +94,7 @@ public class SecurityConfig {
         public CorsConfigurationSource corsConfigurationSource() {
                 CorsConfiguration config = new CorsConfiguration();
                 config.setAllowedOrigins(List.of(
-                                "https://nukkadseva.yusufjamal.in"));
+                                "https://nukkadseva.yusufjamal.in", "http://localhost:3000"));
                 config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
                 config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cookie", "Accept", "Origin",
                                 "Access-Control-Request-Method", "Access-Control-Request-Headers"));

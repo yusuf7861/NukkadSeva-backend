@@ -1,8 +1,15 @@
 # =============================================
 # DEV Profile — Local Development
 # =============================================
-
 spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+#    url: jdbc:postgresql://localhost:5432/nukkadseva
+#    username: postgres
+#    password: yusuf@123
+
   jpa:
     show-sql: true
     hibernate:
@@ -10,6 +17,11 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 
 # Local file storage (no Azure needed)
 storage:
@@ -32,8 +44,23 @@ logging:
 #    org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: DEBUG
 
-# Cookie: works over HTTP on localhost
+# JWT for dev (fallback for local testing; replace with secure key in env)
+jwt:
+  secret:
+    key: ${JWT_SECRET_KEY:ZmFrZV9kZXYtZGV2X3NlY3JldA==}
+    expiration: 3600000 # 1 hour
+
+# App settings for dev
 app:
+  base-url: ${APP_BASE_URL:http://localhost:8080}
+  cors:
+    allowed-origins:
+      - http://localhost:3000
+      - http://localhost:8080
   cookie:
     secure: false
     same-site: lax
+
+app:
+  redis:
+    enabled: true

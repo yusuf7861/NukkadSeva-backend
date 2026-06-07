@@ -14,4 +14,14 @@ public class DashboardProviderDto {
     private String bio;
     private String availability;
     private String mobileNumber;
+    private String city;
+    private String state;
+    private Double averageRating;
+    private Integer reviewCount;
+    // Trust signals
+    private Boolean isVerified;
+    private Integer jobsCompleted;
+    private Integer responseTimeMinutes;
+    private String serviceGuarantees;
+    private String memberSince;
 }
