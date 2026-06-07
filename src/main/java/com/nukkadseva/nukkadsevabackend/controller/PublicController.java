@@ -20,6 +20,7 @@ public class PublicController {
 
         private final ProviderService providerService;
         private final CityService cityService;
+        private final com.nukkadseva.nukkadsevabackend.service.ReviewService reviewService;
 
         @GetMapping
         public ResponseEntity<?> getProviders(
@@ -39,6 +40,14 @@ public class PublicController {
                                 "totalItems", providerPage.getTotalElements()));
 
                 return ResponseEntity.ok(response);
+        }
+
+        @GetMapping("/{id}/reviews")
+        public ResponseEntity<java.util.List<com.nukkadseva.nukkadsevabackend.dto.response.ReviewResponseDto>>
+                getProviderReviewsPublic(@PathVariable("id") Long providerId) {
+                java.util.List<com.nukkadseva.nukkadsevabackend.dto.response.ReviewResponseDto> reviews =
+                                reviewService.getReviewsForProvider(providerId);
+                return ResponseEntity.ok(reviews);
         }
 
         /**

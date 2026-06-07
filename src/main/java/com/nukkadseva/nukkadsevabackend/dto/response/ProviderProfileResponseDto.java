@@ -41,4 +41,11 @@ public class ProviderProfileResponseDto {
     private String qualification;
     private String policeVerification;
     private String gstin;
+
+    // Trust signals
+    private Boolean isVerified;
+    private Integer jobsCompleted;
+    private Integer responseTimeMinutes;
+    private String serviceGuarantees;
+    private String memberSince;
 }
