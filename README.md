@@ -295,6 +295,20 @@ This platform provides dedicated endpoints for:
 
 Check `/swagger-ui.html` during runtime to inspect and test all API routes directly.
 
+## 📈 Load Testing (k6)
+
+This repository now includes a k6 suite under `load-tests/` to exercise public, customer, provider, and admin APIs.
+
+```bash
+cd /home/yjamal/HomeFix/NukkadSeva-backend
+set -a
+source load-tests/.env
+set +a
+k6 run load-tests/main.js
+```
+
+See `load-tests/README.md` for full setup, mutation testing, and endpoint coverage details.
+
 ## 🤝 Contributing
 
 Follow this flow for consistent, safe contributions.
