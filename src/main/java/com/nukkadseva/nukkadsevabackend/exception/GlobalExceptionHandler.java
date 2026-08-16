@@ -4,10 +4,8 @@ import com.nukkadseva.nukkadsevabackend.dto.ApiError;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -76,9 +74,9 @@ public class GlobalExceptionHandler {
         return buildErrorResponse("DATABASE_ERROR", e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleValidationExceptions(
-            MethodArgumentNotValidException ex) {
+            org.springframework.web.bind.MethodArgumentNotValidException ex) {
         String errorMessage = ex.getBindingResult().getFieldErrors().stream()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .findFirst()
@@ -86,25 +84,10 @@ public class GlobalExceptionHandler {
         return buildErrorResponse("VALIDATION_ERROR", errorMessage, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
     public ResponseEntity<ApiError> handleHttpMessageNotReadableException(
-            HttpMessageNotReadableException ex) {
+            org.springframework.http.converter.HttpMessageNotReadableException ex) {
         return buildErrorResponse("MALFORMED_JSON_REQUEST", ex.getMessage(), HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(InvalidTokenException.class)
-    public ResponseEntity<ApiError> handleInvalidTokenException(InvalidTokenException e) {
-        return buildErrorResponse("INVALID_TOKEN", e.getMessage(), HttpStatus.UNAUTHORIZED);
-    }
-
-    @ExceptionHandler(TokenRevokedException.class)
-    public ResponseEntity<ApiError> handleTokenRevokedException(TokenRevokedException e) {
-        return buildErrorResponse("TOKEN_REVOKED", e.getMessage(), HttpStatus.UNAUTHORIZED);
-    }
-
-    @ExceptionHandler(TokenExpiredException.class)
-    public ResponseEntity<ApiError> handleTokenExpiredException(TokenExpiredException e) {
-        return buildErrorResponse("TOKEN_EXPIRED", e.getMessage(), HttpStatus.UNAUTHORIZED);
     }
 
     // define all methods above 👆👆👆👆

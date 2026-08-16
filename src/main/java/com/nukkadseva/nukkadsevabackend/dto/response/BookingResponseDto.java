@@ -23,7 +23,6 @@ public class BookingResponseDto {
     private BookingStatus status;
     private PaymentStatus paymentStatus;
     private BigDecimal priceEstimate;
-    private String serviceAddress;
     private String note;
     private LocalDateTime createdAt;
     private String completionOtp;

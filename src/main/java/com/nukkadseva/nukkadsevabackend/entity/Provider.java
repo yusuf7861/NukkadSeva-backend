@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.Formula;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
@@ -129,26 +128,4 @@ public class Provider {
 
     @OneToMany(mappedBy = "provider", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProviderArea> providerAreas = new ArrayList<>();
-
-    @Formula("(SELECT COALESCE(AVG(r.rating), 0) FROM reviews r WHERE r.provider_id = provider_id)")
-    private Double averageRating;
-
-    @Formula("(SELECT COUNT(r.review_id) FROM reviews r WHERE r.provider_id = provider_id)")
-    private Integer reviewCount;
-
-    // Number of completed jobs (derived from booking table)
-    @Formula("(SELECT COUNT(b.booking_id) FROM booking b WHERE b.provider_id = provider_id AND b.status = 'COMPLETED')")
-    private Integer jobsCompleted;
-
-    // Publicly-visible verification flag (e.g., ID/phone/address verification consolidated)
-    @Column(name = "is_verified", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
-    private Boolean isVerified = false;
-
-    // Response time in minutes (optional, can be updated by provider)
-    @Column(name = "response_time_minutes")
-    private Integer responseTimeMinutes;
-
-    // Service guarantees / badges text (comma separated or short JSON string)
-    @Column(name = "service_guarantees", length = 500)
-    private String serviceGuarantees;
 }

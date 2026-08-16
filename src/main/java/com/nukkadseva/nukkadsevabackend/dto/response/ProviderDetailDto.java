@@ -37,9 +37,4 @@ public class ProviderDetailDto {
     private ProviderStatus status;
     private LocalDateTime createdAt;
     private String rejectionReason;
-    // Trust signals
-    private Boolean isVerified;
-    private Integer jobsCompleted;
-    private Integer responseTimeMinutes;
-    private String serviceGuarantees;
 }

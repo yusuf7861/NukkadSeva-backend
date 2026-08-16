@@ -3,21 +3,11 @@
 # =============================================
 
 spring:
-  datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
   jpa:
     show-sql: false
     hibernate:
       ddl-auto: validate
     open-in-view: false
-
-    # Redis configured from environment in prod
-  data:
-    redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT:6379}
 
 # Azure Blob storage in production
 storage:
@@ -37,26 +27,11 @@ logging:
     com.nukkadseva: INFO
     org.springframework: WARN
 
-
-# JWT in prod must be supplied via environment variable
-jwt:
-  secret:
-    key: ${JWT_SECRET_KEY}
-    expiration: ${JWT_EXPIRATION_MS:3600000}
-
-# App settings for prod
+# Cookie: HTTPS only, cross-site support
 app:
-  base-url: ${APP_BASE_URL:https://nukkadseva.yusufjamal.in}
-  cors:
-    allowed-origins:
-      - ${APP_ALLOWED_ORIGIN:https://nukkadseva.yusufjamal.in}
   cookie:
     secure: true
     same-site: none
 
-  redis:
-    enabled: false
-
 server:
   forward-headers-strategy: native
-
