@@ -44,11 +44,11 @@ public class Users {
     @Column(name = "token_expires_at")
     private LocalDateTime tokenExpiresAt;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "customer_id", referencedColumnName = "id")
     private Customers customers;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "provider_id", referencedColumnName = "provider_id")
     private Provider provider;
 }

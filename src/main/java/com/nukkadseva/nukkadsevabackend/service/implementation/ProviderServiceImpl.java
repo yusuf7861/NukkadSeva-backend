@@ -324,17 +324,7 @@ public class ProviderServiceImpl implements ProviderService {
 
         Page<Provider> providerPage = providerRepository.findAll(spec, pageable);
 
-        // Map Provider -> DashboardProviderDto and add trust signals that MapStruct cannot
-        return providerPage.map(p -> {
-            com.nukkadseva.nukkadsevabackend.dto.response.DashboardProviderDto dto = providerMapper
-                    .toDashboardProviderDto(p);
-            dto.setIsVerified(p.getIsVerified());
-            dto.setJobsCompleted(p.getJobsCompleted());
-            dto.setResponseTimeMinutes(p.getResponseTimeMinutes());
-            dto.setServiceGuarantees(p.getServiceGuarantees());
-            dto.setMemberSince(p.getCreatedAt() != null ? p.getCreatedAt().toLocalDate().toString() : null);
-            return dto;
-        });
+        return providerPage.map(providerMapper::toDashboardProviderDto);
     }
 
     /**
@@ -446,11 +436,6 @@ public class ProviderServiceImpl implements ProviderService {
                 .qualification(provider.getQualification())
                 .policeVerification(provider.getPoliceVerification())
                 .gstin(provider.getGstin())
-                .isVerified(provider.getIsVerified())
-                .jobsCompleted(provider.getJobsCompleted())
-                .responseTimeMinutes(provider.getResponseTimeMinutes())
-                .serviceGuarantees(provider.getServiceGuarantees())
-                .memberSince(provider.getCreatedAt() != null ? provider.getCreatedAt().toLocalDate().toString() : null)
                 .build();
     }
 

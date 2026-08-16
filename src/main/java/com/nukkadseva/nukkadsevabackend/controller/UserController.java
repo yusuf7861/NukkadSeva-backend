@@ -4,9 +4,6 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.nukkadseva.nukkadsevabackend.dto.request.RefreshTokenRequest;
-import com.nukkadseva.nukkadsevabackend.dto.response.RefreshTokenResponse;
-import com.nukkadseva.nukkadsevabackend.service.RefreshTokenService;
 import com.nukkadseva.nukkadsevabackend.util.FileValidationUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -37,7 +34,6 @@ import com.nukkadseva.nukkadsevabackend.service.AuthService;
 public class UserController {
     private final UserService userService;
     private final AuthService authService;
-    private final RefreshTokenService refreshTokenService;
 
     @Value("${app.cookie.secure:true}")
     private boolean cookieSecure;
@@ -92,24 +88,6 @@ public class UserController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(response);
-    }
-
-    @PostMapping("/refresh")
-    public ResponseEntity<RefreshTokenResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request,
-            HttpServletResponse response) {
-        RefreshTokenResponse tokenResponse = refreshTokenService.rotateRefreshToken(request.refreshToken());
-
-        ResponseCookie cookie = ResponseCookie.from("jwt", tokenResponse.accessToken())
-                .httpOnly(true)
-                .secure(cookieSecure)
-                .path("/")
-                .maxAge(Duration.ofDays(1))
-                .sameSite(cookieSameSite)
-                .build();
-
-        response.addHeader("Set-Cookie", cookie.toString());
-
-        return ResponseEntity.ok(tokenResponse);
     }
 
     @PostMapping("/forgot-password")

@@ -5,7 +5,6 @@ import com.nukkadseva.nukkadsevabackend.dto.request.ResetPasswordRequest;
 import com.nukkadseva.nukkadsevabackend.dto.request.UserRequest;
 import com.nukkadseva.nukkadsevabackend.dto.response.AuthResponse;
 import com.nukkadseva.nukkadsevabackend.entity.Customers;
-import com.nukkadseva.nukkadsevabackend.entity.RefreshToken;
 import com.nukkadseva.nukkadsevabackend.entity.Users;
 import com.nukkadseva.nukkadsevabackend.entity.enums.AuthProvider;
 import com.nukkadseva.nukkadsevabackend.entity.enums.Role;
@@ -16,12 +15,9 @@ import com.nukkadseva.nukkadsevabackend.oauth.GoogleTokenService;
 import com.nukkadseva.nukkadsevabackend.oauth.OAuthUserInfo;
 import com.nukkadseva.nukkadsevabackend.repository.CustomerRepository;
 import com.nukkadseva.nukkadsevabackend.repository.UserRepository;
-import com.nukkadseva.nukkadsevabackend.security.CustomUserDetails;
 import com.nukkadseva.nukkadsevabackend.security.JwtUtil;
 import com.nukkadseva.nukkadsevabackend.service.AuthService;
 import com.nukkadseva.nukkadsevabackend.service.EmailService;
-import com.nukkadseva.nukkadsevabackend.service.RefreshTokenService;
-import com.nukkadseva.nukkadsevabackend.service.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,6 +27,7 @@ import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,8 +47,6 @@ public class AuthServiceImpl implements AuthService {
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final GoogleTokenService googleTokenService;
-    private final RefreshTokenService refreshTokenService;
-    private final RedisService redisService;
 
     @Override
     public AuthResponse login(UserRequest userRequest) {
@@ -61,8 +56,10 @@ public class AuthServiceImpl implements AuthService {
                             userRequest.getEmail(),
                             userRequest.getPassword()));
 
-            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-            Users user = userDetails.getUser();
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
+            Users user = userRepository.findByEmail(userDetails.getUsername())
+                    .orElseThrow(() -> new UserAuthenticationException("User not found"));
 
             if (!user.isVerified()) {
                 throw new UserAuthenticationException("Please verify your email before logging in");
@@ -127,11 +124,10 @@ public class AuthServiceImpl implements AuthService {
         String role = user.getRole().name();
         Long profileId = getProfileId(user);
         String token = jwtUtil.generateToken(user.getId(), user.getEmail(), role, profileId);
-        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
 
         return AuthResponse.builder()
                 .accessToken(token)
-                .refreshToken(refreshToken.getToken())
+                .refreshToken(null)
                 .tokenType("Bearer")
                 .build();
     }
@@ -164,9 +160,6 @@ public class AuthServiceImpl implements AuthService {
         String otp = String.format("%06d", new java.security.SecureRandom().nextInt(1000000));
 
         user.setVerificationToken(otp);
-        redisService.set(
-                "password-reset-otp:"+ user.getEmail(), otp, 5 * 60
-        );
         user.setTokenExpiresAt(LocalDateTime.now().plusMinutes(15));
         userRepository.save(user);
 

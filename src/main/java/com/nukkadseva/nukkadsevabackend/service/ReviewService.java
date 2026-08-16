@@ -9,6 +9,4 @@ public interface ReviewService {
     ReviewResponseDto submitReview(ReviewRequestDto requestDto, Authentication authentication);
 
     List<ReviewResponseDto> getProviderReviews(Authentication authentication);
-
-    List<ReviewResponseDto> getReviewsForProvider(Long providerId);
 }

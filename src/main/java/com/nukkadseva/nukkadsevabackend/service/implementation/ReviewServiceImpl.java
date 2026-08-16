@@ -102,22 +102,4 @@ public class ReviewServiceImpl implements ReviewService {
                         .build())
                 .collect(Collectors.toList());
     }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ReviewResponseDto> getReviewsForProvider(Long providerId) {
-        return reviewRepository.findByProviderIdOrderByCreatedAtDesc(providerId)
-                .stream()
-                .map(r -> ReviewResponseDto.builder()
-                        .id(r.getId())
-                        .bookingId(r.getBooking().getId())
-                        .customerId(r.getCustomer().getId())
-                        .customerName(r.getCustomer().getFullName())
-                        .providerId(r.getProvider().getId())
-                        .rating(r.getRating())
-                        .comment(r.getComment())
-                        .createdAt(r.getCreatedAt())
-                        .build())
-                .collect(Collectors.toList());
-    }
 }
